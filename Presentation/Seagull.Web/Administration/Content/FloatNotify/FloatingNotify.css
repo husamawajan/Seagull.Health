@@ -1,0 +1,171 @@
+﻿
+.floatContainer {
+    top: 112px;
+    left: 13px;
+    position: fixed;
+    width: 75px;
+    height: 74px;
+    background-color: #00a65a;
+    border-radius: 90px;
+    transition: width 0.7s;
+    overflow: hidden;
+    z-index: 555;
+    box-shadow: 0px 5px 18px -2px rgba(0,0,0,0.7);
+}
+
+.itemFloat {
+    position: relative;
+    width: 90px;
+    height: 77px;
+    border-radius: 90px;
+    margin-right: 22.5px;
+    z-index: 1;
+    float: left;
+    background-color: rgb(0, 166, 90);
+}
+
+.highlight {
+    position: absolute;
+    width: 0;
+    height: 0;
+    margin: 45px;
+    border-radius: 90px;
+    transition: 0.1s;
+    top: 0;
+    left: 0;
+}
+
+.navFloat {
+    position: relative;
+    color: #ffffff;
+    top: 45px;
+    left: 45px;
+    font-size: 0px;
+    transition: font 0s;
+    z-index: 3;
+}
+
+.anchorFloat {
+    /*float: left;*/
+    top: -20px;
+    right: -7px;
+    z-index: 4;
+    position: absolute;
+    color: #FFF;
+    transition: transform 0.2s;
+    transition-delay: 0.2s;
+    width: 90px;
+    height: 90px;
+}
+
+    .anchorFloat i {
+        margin-right: 33px;
+        margin-top: 45px;
+    }
+
+.floatContainer:hover {
+    width: 64%;
+}
+
+    .floatContainer:hover .anchorFloat {
+        transform: rotate(45deg);
+    }
+
+    .floatContainer:hover .navFloat {
+        font-size: x-large;
+        transition: 0.1s;
+        top: 27px;
+        right: 33px;
+    }
+
+    .floatContainer:hover .one {
+        transition-delay: 0.7s;
+    }
+
+    .floatContainer:hover .two {
+        transition-delay: 0.45s;
+    }
+
+    .floatContainer:hover .three {
+        transition-delay: 0.2s;
+    }
+
+.itemFloat:hover {
+     background-color: #2f4554;
+    transition: 0.4s;
+}
+
+.itemFloat:active .highlight {
+   z-index: 2;
+    margin: 6px;
+    width: 80px;
+    height: 74px;
+    background-color: #2f4554;
+}
+
+/**
+ * Tooltip Styles
+ */
+
+/* Add this attribute to the element that needs a tooltip */
+[data-tooltip] {
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+}
+
+/* Hide the tooltip content by default */
+[data-tooltip]:before,
+[data-tooltip]:after {
+  visibility: hidden;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+  filter: progid: DXImageTransform.Microsoft.Alpha(Opacity=0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Position tooltip above the element */
+[data-tooltip]:before {
+  position: absolute;
+  bottom: 150%;
+  left: 50%;
+  margin-bottom: 5px;
+  margin-left: -80px;
+  padding: 7px;
+  width: 160px;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  background-color: #000;
+  background-color: hsla(0, 0%, 20%, 0.9);
+  color: #fff;
+  content: attr(data-tooltip);
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+/* Triangle hack to make tooltip look like a speech bubble */
+[data-tooltip]:after {
+  position: absolute;
+  bottom: 150%;
+  left: 50%;
+  margin-left: -5px;
+  width: 0;
+  border-top: 5px solid #000;
+  border-top: 5px solid hsla(0, 0%, 20%, 0.9);
+  border-right: 5px solid transparent;
+  border-left: 5px solid transparent;
+  content: " ";
+  font-size: 0;
+  line-height: 0;
+}
+
+/* Show tooltip content on hover */
+[data-tooltip]:hover:before,
+[data-tooltip]:hover:after {
+  visibility: visible;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+  filter: progid: DXImageTransform.Microsoft.Alpha(Opacity=100);
+  opacity: 1;
+}

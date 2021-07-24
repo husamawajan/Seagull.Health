@@ -1,0 +1,84 @@
+﻿@{
+    ViewBag.Title = T("Admin.Report").Text;
+    Html.SetActiveMenuItemSystemName("Report");
+    var IsAdmin = EngineContext.Current.Resolve<Seagull.Services.Security.IPermissionService>();
+}
+<sg-page title="@T("Admin.Report")" ng-controller="pageCtrl">
+    <sg-tabs>
+        <sg-tab title="@T("Admin.Report.TestReport")">
+            <form sg-form name="myform" data-ctrl="TestReport" data-view="False" token="@Html.RequestVerificationToken("TestReport")" form-controller="TestReport">
+                <sg-input type="text" name="TestNo" label="@T("Admin.Test.TestNo")" ng-model="model.TestNo"></sg-input>
+                <sg-select label="@T("Admin.Test.WayToReceivTest")" name="WayToReceivTest" ng-model="model.WayToReceivTest" datasrc="GenericGets/GetAllWayToReceivTest" return-col="Id" return-as="Name"></sg-select>
+                <sg-select label="@T("Admin.Test.TestType")" name="TestType" ng-model="model.TestType" datasrc="GenericGets/GetAllTestType" return-col="Id" return-as="Name"></sg-select>
+                <sg-select label="@T("Admin.Test.Registrar")" name="Registrar" ng-model="model.Registrar" datasrc="GenericGets/GetUserByRoleAndGovernment" return-col="Id" return-as="Name"></sg-select>
+                <sg-select label="@T("Admin.Test.CompanyType")" name="CompanyType" ng-model="model.CompanyType" datasrc="GenericGets/GetAllCompanyType" filter="{Value:model.TestType}" return-col="Id" return-as="Name"></sg-select>
+                <sg-select label="@T("Admin.Test.TestAction")" name="TestAction" ng-model="model.TestAction" datasrc="GenericGets/GetAllTestAction" filter="{Value:model.TestType}" return-col="Id" return-as="Name"></sg-select>
+                <sg-select label="@T("Admin.Test.CompanyAddress")" name="GovernmentsId" ng-model="model.GovernmentsId" datasrc="GenericGets/GetAllGovernments" return-col="Id" return-as="Name"></sg-select>
+                <sg-input type="date" name="StartDate" label="@T("Admin.Test.StartDate")" ng-model="model.StartDate"></sg-input>
+                <sg-input type="date" name="EndDate" label="@T("Admin.Test.EndDate")" ng-model="model.EndDate"></sg-input>
+                <div id="TestReportSearchButtons" class="pull-right">
+                    <span class="btn btn-success pull-right " ng-click="TestReportSearch()">@T("Admin.GovermentMainPlan.Search")</span>
+                </div>
+                <div class="box-body">
+                    <div id="TestReportView">
+                    </div>
+                </div>
+            </form>
+        </sg-tab>
+    </sg-tabs>
+</sg-page>
+<style>
+    .ui-jqgrid-htable,
+    .ui-jqgrid-btable,
+    .ui-jqgrid-pager,
+    .ui-jqgrid-view,
+    .ui-jqgrid-bdiv,
+    .ui-jqgrid-hdiv,
+    .ui-jqgrid-hbox,
+    .ui-jqgrid {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+</style>
+<script>
+    var subGridTable = "";
+
+
+    function returnHyperCountProjectSubGridLink(cellValue, options, rowdata, action) {
+        var input = "";
+        return "<a href='javascript:void(0)' " + input + " class='btn bg-blue'>" +
+                "<i class='fa fa-share-alt-square' style='padding-left: 0px !important;'></i> " +
+                rowdata.ProjectCount + " " + '@T("Admin.Projects")'
+        "</a>";
+    }
+    SeagullApp.controller('pageCtrl', function ($scope, $http, $rootScope) {
+
+    });
+
+    var app = SeagullApp.controller('TestReport', function ($scope, $filter, $http, $timeout, $rootScope) {
+        $scope.SearchPrint = function (tableName, type) {
+            window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/Report/TestReport', true, $scope, "", $('#jqGridTestReport').getGridParam("postData"));
+            return;
+        }
+
+        $scope.TestReportSearch = function (canprint, type) {
+             var _urlTestReport = buildSearchCriteriaUrlDynamicForReport('/Admin/Report/TestReport', false, $scope, "",[]);
+            var model = [
+                { label: 'Id', name: 'Id', align: "center", key: true, hidden: true },
+                { label: '@T("Admin.Test.TestNo")', name: 'TestNo', align: "center" },
+                { label: '@T("Admin.Test.TestType")', name: 'strTestType', align: "center" },
+                { label: '@T("Admin.Test.WayToReceivTest")', name: 'strWayToReceivTest', align: "center" },
+                { label: '@T("Admin.Test.Registrar") ', name: 'strRegistrar', align: "center" },
+                { label: '@T("Admin.Test.StatusId")', name: 'strStatus', align: "center" },
+                { label: '@T("Admin.Test.CompanyType")', name: 'strCompanyType', align: "center" },
+                { label: '@T("Admin.Test.TestAction")', name: 'strTestAction', align: "center" },
+                { label: '@T("Admin.Test.CompanyAddress")', name: 'strGovernmentsId', align: "center" },
+                { label: '@T("Admin.Test.Date")', name: 'CreateDate', align: "center" },
+            ];
+            BuildReportDiv("TestReportView", "jqGridTestReport", "jqGridTestReportPager");
+            buildGrid(model, "jqGridTestReport", _urlTestReport, '@int.MaxValue', "jqGridTestReportPager",
+             false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, "", "TestReportSearchButtons**SearchPrint('jqGridTestReport', 1)")
+
+        }
+    });
+</script>

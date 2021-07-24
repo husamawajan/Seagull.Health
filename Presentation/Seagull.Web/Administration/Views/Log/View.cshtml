@@ -1,0 +1,105 @@
+﻿@model LogModel
+
+@{
+    //page title
+    ViewBag.Title = T("Admin.System.Log.ViewLogDetails").Text;
+    //active menu item (system name)
+    Html.SetActiveMenuItemSystemName("Log");
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="content-header clearfix">
+        <h1 class="pull-left">
+            @T("Admin.System.Log.ViewLogDetails")
+            <small><i class="fa fa-arrow-circle-left"></i>@Html.ActionLink(T("Admin.System.Log.BackToList").Text, "List")</small>
+        </h1>
+        <div class="pull-right">
+            <span id="log-delete" class="btn bg-red">
+                <i class="fa fa-trash-o"></i>
+                @T("Admin.Common.Delete")
+            </span>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="form-horizontal">
+            <div class="panel-group">
+                <div class="panel panel-default">
+                    @Html.ValidationSummary(true)
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                @Html.SeagullLabelFor(model => model.LogLevel)
+                            </div>
+                            <div class="col-md-9">
+                                @Html.SeagullDisplayFor(model => model.LogLevel)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                @Html.SeagullLabelFor(model => model.ShortMessage)
+                            </div>
+                            <div class="col-md-9">
+                                @Html.SeagullDisplayFor(model => model.ShortMessage)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                @Html.SeagullLabelFor(model => model.FullMessage)
+                            </div>
+                            <div class="col-md-9">
+                                @Html.SeagullDisplayFor(model => model.FullMessage)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                @Html.SeagullLabelFor(model => model.IpAddress)
+                            </div>
+                            <div class="col-md-9">
+                                @Html.SeagullDisplayFor(model => model.IpAddress)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                @Html.SeagullLabelFor(model => model.UserId)
+                            </div>
+                            <div class="col-md-9">
+                                @if (Model.UserId.HasValue)
+                                {
+                                    @Html.ActionLink(!String.IsNullOrEmpty(Model.UserEmail) ? Model.UserEmail : T("Admin.Users.Guest").Text, "Edit", "User", new { id = Model.UserId }, new { })
+                                }
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                @Html.SeagullLabelFor(model => model.PageUrl)
+                            </div>
+                            <div class="col-md-9">
+                                @Html.SeagullDisplayFor(model => model.PageUrl)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                @Html.SeagullLabelFor(model => model.ReferrerUrl)
+                            </div>
+                            <div class="col-md-9">
+                                @Html.SeagullDisplayFor(model => model.ReferrerUrl)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                @Html.SeagullLabelFor(model => model.CreatedOn)
+                            </div>
+                            <div class="col-md-9">
+                                @Html.SeagullDisplayFor(model => model.CreatedOn)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@Html.DeleteConfirmation("log-delete")

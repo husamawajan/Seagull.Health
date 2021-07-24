@@ -1,0 +1,99 @@
+﻿
+/** {
+	margin:0px;
+	padding:0px;
+	-webkit-box-sizing:border-box;
+	-moz-box-sizing:border-box;
+	-o-box-sizing:border-box;
+	box-sizing:border-box;
+}*/
+
+/*body {
+
+  background: -webkit-linear-gradient(9deg, rgb(9, 11, 29), rgb(206, 14, 14));
+  font-family: 'Roboto', sans-serif;
+  overflow: hidden;
+  
+
+}*/
+
+.login-block{
+        overflow: auto;
+    background: #DE6262;  /* fallback for old browsers */
+background: -webkit-linear-gradient(9deg, rgb(9, 11, 29), rgb(206, 14, 14));  /* Chrome 10-25, Safari 5.1-6 */
+background: -webkit-linear-gradient(9deg, rgb(9, 11, 29), rgb(206, 14, 14)); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+float:left;
+width:100%;
+height:100%;
+padding : 50px 0;
+}
+.banner-sec{background:url(https://hdwallpapersbuzz.com/wp-content/uploads/2016/11/Petra-in-Jordan-HD-Photo-1.png)  no-repeat left bottom; background-size:cover; min-height:500px; border-radius: 0 10px 10px 0; padding:0;}
+.container{background:#fff; border-radius: 10px; box-shadow:15px 20px 0px rgba(0,0,0,0.1);}
+.carousel-inner{border-radius:0 10px 10px 0;}
+.carousel-caption{text-align:left; left:5%;}
+.login-sec{padding: 50px 30px; position:relative;}
+.login-sec .copy-text{position:absolute; width:80%; bottom:20px; font-size:13px; text-align:center;}
+.login-sec .copy-text i{color:#f90122;}
+.login-sec .copy-text a{color:#5b27d8;}
+.login-sec h2{margin-bottom: 30px;
+    /*font-weight: 2000;*/
+    font-size: 30px;
+    color: #100b1c;
+    margin-top: 6px;
+
+}
+.login-sec h2:after{    
+    content: " ";
+    width: 90%;
+    height: 2px;
+    background: #100b1c;
+    display: block;
+    margin-top: 14px;
+    border-radius: 3px;
+    margin-left: auto;
+    margin-right: auto;
+
+}
+.btn-login {
+    background: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    font-weight: 600;
+}
+.banner-text{width:70%; position:absolute; bottom:107px; padding-left:20px;}
+.banner-text h2{color:#fff; font-weight:600;}
+.banner-text h2:after{content:" "; width:100px; height:5px; background:#FFF; display:block; margin-top:20px; border-radius:3px;}
+.banner-text p{color:#fff;}
+.btn-login:hover {
+    cursor:pointer;
+    background: #100b1c;
+    color: #fff;
+    font-weight: 600;
+}
+.centerContainer{
+        margin-top: auto;
+    margin-bottom: auto;
+}
+.img-fluid{
+    height: 500px !important;
+}
+.carousel-indicators .active{
+    background-color: #110b1c !important;
+}
+form{
+        padding: 22px;
+        background: -webkit-linear-gradient(9deg, rgb(75, 62, 109), rgb(179, 0, 0));
+    border-radius: 42px;
+
+}
+.form-group{
+    text-align:center;
+    color: #fff;
+}
+.form-check {
+    position: relative;
+    display: block;
+    margin-bottom: 2.5rem;
+}
+.form-control{
+    text-align: center;
+}

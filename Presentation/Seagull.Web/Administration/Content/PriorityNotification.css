@@ -1,0 +1,344 @@
+﻿
+.notificationsPriority {
+    position: fixed;
+    bottom: 450px;
+    width: 130px;
+    /*background-color: #f40;*/
+    animation: notificationsecond 8s ease;
+    transition: width 1s ease;
+    z-index: 1000000000 !important;
+}
+
+    .notificationsPriority:hover {
+        animation: none;
+        width: 320px;
+    }
+
+    .notificationsPriority .image {
+        background-image: none !important;
+        -webkit-animation: fadeIt 8s ease-in-out;
+        -moz-animation: fadeIt 8s ease-in-out;
+        -o-animation: fadeIt 8s ease-in-out;
+        animation: fadeIt 8s ease-in-out;
+    }
+
+@-webkit-keyframes fadeIt {
+    0% {
+        background-color: yellow;
+    }
+
+    10% {
+        background-color: #dd4b39;
+    }
+
+    20% {
+        background-color: yellow;
+    }
+
+    30% {
+        background-color: #dd4b39;
+    }
+
+    40% {
+        background-color: yellow;
+    }
+
+    50% {
+        background-color: #dd4b39;
+    }
+
+    60% {
+        background-color: yellow;
+    }
+
+    70% {
+        background-color: #dd4b39;
+    }
+
+    80% {
+        background-color: yellow;
+    }
+
+    100% {
+        background-color: #dd4b39;
+    }
+}
+
+@-moz-keyframes fadeIt {
+    0% {
+        background-color: yellow;
+    }
+
+    10% {
+        background-color: #dd4b39;
+    }
+
+    20% {
+        background-color: yellow;
+    }
+
+    30% {
+        background-color: #dd4b39;
+    }
+
+    40% {
+        background-color: yellow;
+    }
+
+    50% {
+        background-color: #dd4b39;
+    }
+
+    60% {
+        background-color: yellow;
+    }
+
+    70% {
+        background-color: #dd4b39;
+    }
+
+    80% {
+        background-color: yellow;
+    }
+
+    100% {
+        background-color: #dd4b39;
+    }
+}
+
+@-o-keyframes fadeIt {
+    0% {
+        background-color: yellow;
+    }
+
+    10% {
+        background-color: #dd4b39;
+    }
+
+    20% {
+        background-color: yellow;
+    }
+
+    30% {
+        background-color: #dd4b39;
+    }
+
+    40% {
+        background-color: yellow;
+    }
+
+    50% {
+        background-color: #dd4b39;
+    }
+
+    60% {
+        background-color: yellow;
+    }
+
+    70% {
+        background-color: #dd4b39;
+    }
+
+    80% {
+        background-color: yellow;
+    }
+
+    100% {
+        background-color: #dd4b39;
+    }
+}
+
+@keyframes fadeIt {
+    0% {
+        background-color: yellow;
+    }
+
+    10% {
+        background-color: #dd4b39;
+    }
+
+    20% {
+        background-color: yellow;
+    }
+
+    30% {
+        background-color: #dd4b39;
+    }
+
+    40% {
+        background-color: yellow;
+    }
+
+    50% {
+        background-color: #dd4b39;
+    }
+
+    60% {
+        background-color: yellow;
+    }
+
+    70% {
+        background-color: #dd4b39;
+    }
+
+    80% {
+        background-color: yellow;
+    }
+
+    100% {
+        background-color: #dd4b39;
+    }
+}
+/*
+.notificationsPriority a {
+    color: inherit;
+    text-decoration: none;
+    height: 100px;
+    width: 100%;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    line-height: 100px;
+    user-select: none;
+    animation: notificationinit 2s ease;
+    z-index: 1000;
+    overflow: hidden;
+    transition: 1s ease;
+}
+
+    .notificationsPriority a .text {
+        position: absolute;
+        right: 0px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 185px;
+        text-align: center;
+        line-height: 2em;
+        color: #dd4b39;
+    }
+
+    .notificationsPriority a .extra {
+        position: absolute;
+        bottom: 1px;
+        left: 1px;
+        color: #FFF;
+        font-size: 12px;
+        line-height: 12px;
+        border: 1px solid transparent;
+        z-index: 10001;
+    }
+
+    .notificationsPriority a .image {
+        position: absolute;
+        top: -1px;
+        left: -1px;
+        height: 100px !important;
+        width: 117px;
+        /*border:1px solid #2f5e73;
+        background-color: #dd4b39;
+        z-index: 10000;
+    }
+
+        
+
+@keyframes notificationinit {
+    0%, 25% {
+        right: -430px;
+    }
+
+    100% {
+        right: 0px;
+    }
+}
+
+@keyframes notificationsecond {
+    0%,75% {
+        width: 320px;
+    }
+    
+}*/
+.twitchnotification {
+           width: 58px;
+    height: 59px;
+    position: absolute;
+    top: 2%;
+    left: -2px;
+        }
+/*.notificationsPriority.image .twitchnotification {
+            height: 94px;
+            position: absolute;
+            top: 3%;
+            left: 23%;
+        }*/
+@keyframes notificationsecondalso {
+    0%,70% {
+        color: rgba(0,0,0,1);
+    }
+
+    80%, 100% {
+        color: rgba(0,0,0,0);
+    }
+}
+
+@keyframes noticable {
+    0%, 100% {
+        width: 117px;
+    }
+
+    25%,50% {
+        width: 400px;
+    }
+}
+
+@keyframes shake {
+    0%,50%,100% {
+        transform: translateY(0px) translate(-50%,-50%);
+    }
+
+    25% {
+        transform: translateY(4px) translate(-50%,-50%);
+    }
+
+    75% {
+        transform: translateY(-4px) translate(-50%,-50%);
+    }
+}
+
+@keyframes example {
+    0% {
+        background-color: red;
+    }
+
+    25% {
+        background-color: yellow;
+    }
+
+    50% {
+        background-color: blue;
+    }
+
+    100% {
+        background-color: green;
+    }
+}
+
+#divnotificationsPriority0{
+     bottom: 550px;
+}
+#divnotificationsPriority1{
+     bottom: 450px;
+}
+#divnotificationsPriority2{
+     bottom: 350px;
+}
+#divnotificationsPriority3{
+     bottom: 250px;
+}
+#divnotificationsPriority4{
+     bottom: 150px;
+}
+#divnotificationsPriority5{
+     bottom: 50px;
+}

@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = T("Admin.Component").Text;
+    Html.SetActiveMenuItemSystemName("Component");
+}
+<sg-page title="@T("Admin.Component")">
+    <sg-table datasrc="Component/ListComponents" create-action="@Url.Action("PrepareComponent", "Component", new { seagull = UrlHelperExtensions.ActionEncodedCustom(new { id = 0 }) }
+)" token="@Html.RequestVerificationToken("ComponentGrid")">
+        <sg-col name="Name" title="Name" type="text"></sg-col>
+    </sg-table>
+</sg-page>
+

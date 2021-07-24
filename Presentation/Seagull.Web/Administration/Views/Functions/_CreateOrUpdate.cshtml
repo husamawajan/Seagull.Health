@@ -1,0 +1,10 @@
+@model int
+<sg-page title="@T("Admin.Functions.AddNew")">
+    <form sg-form name="myform" data-ctrl="Functions" data-id="@Model" token="@Html.RequestVerificationToken("Functions")">
+        <sg-form-toolbar></sg-form-toolbar>
+        <sg-input type="text" name="Name" label="Name" ng-model="model.Name" ng-required="true"></sg-input>
+    </form>
+</sg-page>
+
+
+

@@ -1,0 +1,193 @@
+﻿@model LoginModel
+@using Seagull.Web.Models.User;
+@using Seagull.Core;
+@using Seagull.Core.Infrastructure;
+@{
+    Layout = null; //"~/Views/Shared/_ColumnsOne.cshtml";
+    Html.AddTitleParts(T("PageTitle.Login").Text);
+    var workContext = EngineContext.Current.Resolve<IWorkContext>();
+    //register URL with return URL (if specified)
+    var registerUrl = Url.RouteUrl("Register");
+    if (!String.IsNullOrEmpty(this.Context.Request.QueryString["returnUrl"]))
+    {
+        var webHelper = EngineContext.Current.Resolve<IWebHelper>();
+        registerUrl = webHelper.ModifyQueryString(registerUrl, "returnurl=" + HttpUtility.UrlEncode(this.Context.Request.QueryString["returnUrl"]), null);
+    }
+}
+@*********************************
+    *Created By : Husam Majed Awajan*
+    *Seagull Technology Solution    *
+    *08/09/2017                     *
+    *********************************@
+@*********************************
+    *Edit By : Husam Majed Awajan*
+    *Seagull Technology Solution *
+    *02/01/2018                  *
+    ******************************@
+@*<link href="//cdn.rawgit.com/twbs/bootstrap/v4-dev/dist/css/bootstrap.css" rel="stylesheet" id="bootstrap-css">*@
+<link rel="stylesheet" href="@Url.Content("~/Content/LoginPage/css/bootstrap.min.css")" />
+<link href="@Url.Content("~/Administration/Content/fontAwesome/css/font-awesome-4.6.3.min.css")" rel="stylesheet" />
+@if (!workContext.WorkingLanguage.Rtl)
+{
+    <link href="@Url.Content("~/Content/LoginPage/css/ace.min.css")" rel="stylesheet" />
+}
+else
+{
+    <link href="@Url.Content("~/Content/LoginPage/css/ace-rtl.min.css")" rel="stylesheet" />
+}
+@*<link href="@Url.Content("~/Administration/Content/Login.css")" rel="stylesheet" />*@
+<script src="@Url.Content("~/Content/LoginPage/js/jquery-2.1.4.min.js")"></script>
+@*<script src="//cdn.rawgit.com/twbs/bootstrap/v4-dev/dist/js/bootstrap.js"></script>*@
+<!DOCTYPE html>
+<style>
+    .field-validation-error {
+        color: #e80c0c;
+        font-size: 15px;
+    }
+    #userlanguage{
+        margin-top: 27px;
+    }
+</style>
+<html @(this.ShouldUseRtlTheme() ? Html.Raw(" dir=\"rtl\"") : null) @Html.SeagullPageCssClasses()>
+<head>
+    <title>
+        @*//page title*@
+        @T("Admin.Common.LoginPage").Text
+    </title>
+</head>
+<body class="login-layout">
+    <img src="@Url.Content("~/Content/LoginPage/images/LoginPic1.jpg")" class="loginBackground" />
+    <div class="main-container">
+        <div class="main-content">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="login-container">
+                        <div class="position-relative">
+                            <div id="login-box" class="login-box visible widget-box no-border">
+                                <div class="widget-body">
+                                    <div class="widget-main" style="padding:80px !important;">
+                                        <div class="center">
+                                            <img src="@Url.Content("~/Content/LoginPage/images/100-Anni-Alpha.png")" width="200" />
+                                            <h1>
+                                                <span class="white">@T("Admin.PublicSystemName")</span>
+                                            </h1>
+                                            <h1>
+                                                <span class="white">@T("Admin.PublicSystemNameCon")</span>
+                                            </h1>
+                                            <div class="space-12"></div>
+                                            @*<form class="center">*@
+                                            @using (Html.BeginForm())
+                                            {
+                                                <fieldset>
+
+                                                    @if (!Model.UsernamesEnabled)
+                                                    {
+                                                        <label class="block clearfix col-sm-6 col-sm-offset-3">
+                                                            <span class="block input-icon input-icon-right">
+                                                                @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = T("Admin.Common.EnterEmail"), autofocus = "autofocus" })
+                                                                <i class="ace-icon fa fa-envelope"></i>
+                                                            </span>
+                                                        </label>
+                                                        @Html.ValidationMessageFor(m => m.Email)
+                                                    }
+                                                    <label class="block clearfix col-sm-6 col-sm-offset-3">
+                                                        <span class="block input-icon input-icon-right">
+                                                            @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = T("Admin.Common.EnterPassword"), autofocus = "autofocus" })
+                                                            <i class="ace-icon fa fa-lock"></i>
+                                                        </span>
+                                                    </label>
+                                                    @Html.ValidationMessageFor(m => m.Password)
+                                                    <div class="clearfix">
+                                                        <div class="col-sm-6 col-sm-offset-3">
+                                                            <button type="submit" class="width-100 btn btn-sm btn-primary">@T("Account.Login.LoginButton")<i class="ace-icon fa fa-key"></i></button>
+                                                            @*<a href="index.html" class="width-100 btn btn-sm btn-primary">
+                                                                    <i class="ace-icon fa fa-key"></i>
+                                                                    <span class="bigger-110">Login</span>
+                                                                </a>*@
+                                                        </div>
+                                                    </div>
+                                                    <div class="space-10"></div>
+                                                </fieldset>
+                                            }
+                                        </div><!-- /.widget-main -->
+
+                                        <div class="center">
+                                            <p class="white">@T("Publib.Poweredby")<a href="@T("Publib.PoweredbyUrl")" target="_blank">@T("Publib.PoweredbyUrlName")</a></p>
+                                        </div>
+                                        <div class="col-sm-12 center">
+                                            @*<i class="fa fa-language white"></i>
+                                            <select name="language">
+                                                <option selected>English</option>
+                                                <option>Arabic</option>
+                                            </select>*@
+                                            
+                                            @Html.Action("LanguageSelectorPublic", "Common", new { area = "" })
+                                        </div>
+                                    </div>
+                                </div><!-- /.widget-body -->
+                            </div><!-- /.login-box -->
+
+
+                        </div><!-- /.position-relative -->
+
+                    </div>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+        </div><!-- /.main-content -->
+    </div>
+    <!-- /.main-container -->
+    <!-- basic scripts -->
+    <!--[if !IE]> -->
+    @*<script src="assets/js/jquery-2.1.4.min.js"></script>*@
+
+    <!-- <![endif]-->
+    <!--[if IE]>
+    <script src="assets/js/jquery-1.11.3.min.js"></script>
+    <![endif]-->
+    <script type="text/javascript">
+        if ('ontouchstart' in document.documentElement) document.write("<script src='assets/js/jquery.mobile.custom.min.js'>" + "<" + "/script>");
+    </script>
+
+    <!-- inline scripts related to this page -->
+    <script type="text/javascript">
+        jQuery(function ($) {
+            $(document).on('click', '.toolbar a[data-target]', function (e) {
+                e.preventDefault();
+                var target = $(this).data('target');
+                $('.widget-box.visible').removeClass('visible');//hide others
+                $(target).addClass('visible');//show target
+            });
+        });
+
+
+
+        //you don't need this, just used for changing background
+        jQuery(function ($) {
+            $('#btn-login-dark').on('click', function (e) {
+                $('body').attr('class', 'login-layout');
+                $('#id-text2').attr('class', 'white');
+                $('#id-company-text').attr('class', 'blue');
+
+                e.preventDefault();
+            });
+            $('#btn-login-light').on('click', function (e) {
+                $('body').attr('class', 'login-layout light-login');
+                $('#id-text2').attr('class', 'grey');
+                $('#id-company-text').attr('class', 'blue');
+                e.preventDefault();
+            });
+            $('#btn-login-blur').on('click', function (e) {
+                $('body').attr('class', 'login-layout blur-login');
+                $('#id-text2').attr('class', 'white');
+                $('#id-company-text').attr('class', 'light-blue');
+                e.preventDefault();
+            });
+        });
+    </script>
+</body>
+</html>
+<script>
+    function setLocation(url) {
+        window.location.href = url;
+    }
+</script>

@@ -1,0 +1,2137 @@
+﻿@model int
+@{
+    ViewBag.Title = T("Admin.SystemReport").Text;
+    Html.SetActiveMenuItemSystemName("SystemReport");
+
+    var IsRtl = EngineContext.Current.ContainerManager.Resolve<Seagull.Core.IWorkContext>().WorkingLanguage.Rtl.ToString().ToLower();
+    var IsAdmin = EngineContext.Current.Resolve<Seagull.Core.IWorkContext>().CurrentUser.UserRoles.Where(a => a.Name == "Administrators").Count() > 0;
+    var IsMailAdmin = EngineContext.Current.Resolve<Seagull.Core.IWorkContext>().CurrentUser.UserRoles.Where(a => a.Name == "Post department official").Count() > 0;
+}
+<sg-page title="@T("Admin.SystemReport")" ng-controller="null">
+    <sg-tabs>
+        @if ((int)Model == 1)
+        {
+            <sg-tab title="@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="ComprehensiveReportCtrl">
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.Operator")" name="Operator" ng-model="model.Operator" datasrc="GenericGets/GetAllOperators" multi return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.Year")" name="Year" ng-model="model.Year" datasrc="GenericGets/GetAllQReportYears" multi return-col="Name" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.Quarter")" name="Quarter" ng-model="model.Quarter" datasrc="GenericGets/GetAllQuarters" multi return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.QTitle")" name="QTitle" ng-model="model.QTitle" datasrc="GenericGets/GetAllQTitles" multi return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.MainQuestion")" name="MainQuestion" ng-model="model.MainQuestion" filter="{TitleId : model.QTitle }" datasrc="GenericGets/GetAllQuestions" multi return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.SubQuestion")" name="SubQuestion" ng-model="model.SubQuestion" datasrc="GenericGets/GetAllSubQuestions" filter="{QuestionId : model.MainQuestion }" multi return-col="Id" return-as="Name"></sg-select>
+                    <div id="ComprehensiveReportSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="ComprehensiveReportSearch()">@T("Admin.Search")</span>
+                        @if (IsRtl.Equals("true"))
+                        {
+                        <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="ComprehensiveReportPrint()"> @T("Admin.Print")</span>
+                        }
+                        else
+                        {
+                        <span class="btn btn-success pull-left " style="margin-right: 10px" ng-click="ComprehensiveReportPrint()"> @T("Admin.Print")</span>
+                        }
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="ComprehensiveReportView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+
+            <sg-tab title="@T("Admin.SystemReport.StatisticalReports.AnnualComprehensiveReport")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="AnnualComprehensiveReportCtrl">
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.AnnualComprehensiveReport.Operator")" name="Operator" ng-model="model.Operator" datasrc="GenericGets/GetAllOperators" multi return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.AnnualComprehensiveReport.Year")" name="Year" ng-model="model.Year" datasrc="GenericGets/GetAllAnnualQReportYears" multi return-col="Name" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.AnnualComprehensiveReport.AnnualQTitle")" name="AnnualQTitle" ng-model="model.AnnualQTitle" datasrc="GenericGets/GetAllAnnualQTitles" multi return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.AnnualComprehensiveReport.AnnualMainQuestion")" name="AnnualMainQuestion" ng-model="model.AnnualMainQuestion" filter="{TitleId : model.AnnualQTitle }" datasrc="GenericGets/GetAllAnnualQuestions" multi return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.AnnualComprehensiveReport.AnnualSubQuestion")" name="AnnualSubQuestion" ng-model="model.AnnualSubQuestion" datasrc="GenericGets/GetAllAnnualSubQuestions" filter="{QuestionId : model.AnnualMainQuestion }" multi return-col="Id" return-as="Name"></sg-select>
+                    <div id="AnnualComprehensiveReportSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="AnnualComprehensiveReportSearch()">@T("Admin.Search")</span>
+
+                        @if (IsRtl.Equals("true"))
+                        {
+                        <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="AnnualComprehensiveReportPrint()"> @T("Admin.Print")</span>
+
+                        }
+                        else
+                        {
+                        <span class="btn btn-success pull-left " style="margin-right: 10px" ng-click="AnnualComprehensiveReportPrint()"> @T("Admin.Print")</span>
+
+                        }
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="AnnualComprehensiveReportView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+
+            <sg-tab title="@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="MobileTariffComprehensiveReportCtrl">
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.OperatorIds")" name="OperatorIds" ng-model="model.OperatorIds" datasrc="GenericGets/GetAllOperators" multi return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.Year")" name="Year" ng-model="model.Year" datasrc="GenericGets/GetAllMobileTariffReportYears" multi return-col="Name" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.PackageCategory")" name="PackageCategory" ng-model="model.PackageCategory" ng-required="true" datasrc="GenericGets/GetAllPackageClassifications" return-col="Id" return-as="Name"></sg-select>
+
+                    <div class="ViewQuestions"></div>
+
+                    <div id="MobileTariffComprehensiveReportSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="MobileTariffComprehensiveReportSearch()">@T("Admin.Search")</span>
+
+                        @if (IsRtl.Equals("true"))
+                        {
+                        <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="MobileTariffComprehensiveReportPrint()"> @T("Admin.Print")</span>
+                        }
+                        else
+                        {
+                        <span class="btn btn-success pull-left " style="margin-right: 10px" ng-click="MobileTariffComprehensiveReportPrint()"> @T("Admin.Print")</span>
+                        }
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="MobileTariffComprehensiveReportView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+
+            <sg-tab title="@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="FixedTariffComprehensiveReportCtrl">
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.OperatorIds")" name="OperatorIds" ng-model="model.OperatorIds" datasrc="GenericGets/GetAllOperators" multi return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Year")" name="Year" ng-model="model.Year" datasrc="GenericGets/GetAllFixedTariffReportYears" multi return-col="Name" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Classification")" name="Classification" ng-model="model.Classification" ng-required="true" datasrc="GenericGets/GetAllFixedTariffClassification" return-col="Id" return-as="Name"></sg-select>
+                    <div ng-if="showDeleteCategory(model.Classification)">
+                        <sg-select label="@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Category")" name="Category" ng-model="model.Category" datasrc="GenericGets/GetAllFixedTariffCategory" return-col="Id" return-as="Name"></sg-select>
+                    </div>
+                    <div ng-if="showDeleteType(model.Classification, model.Category)">
+                        <sg-select label="@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Type")" name="Type" ng-model="model.Type" datasrc="GenericGets/GetAllFixedTariffType" return-col="Id" return-as="Name"></sg-select>
+                    </div>
+                    <div ng-if="showDeleteTechnology(model.Classification, model.Category)">
+                        <sg-select label="@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Technology")" name="Technology" ng-model="model.Technology" datasrc="GenericGets/GetAllFixedTariffTechnology" return-col="Id" return-as="Name"></sg-select>
+                    </div>
+                    <div ng-if="showDeleteService(model.Classification, model.Category)">
+                        <sg-select label="@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Service")" name="Service" ng-model="model.Service" datasrc="GenericGets/GetAllFixedTariffServices" return-col="Id" return-as="Name"></sg-select>
+                    </div>
+
+                    <div class="ViewQuestions"></div>
+
+                    <div id="FixedTariffComprehensiveReportSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="FixedTariffComprehensiveReportSearch()">@T("Admin.Search")</span>
+
+                        @if (IsRtl.Equals("true"))
+                        {
+                            <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="FixedTariffComprehensiveReportPrint()"> @T("Admin.Print")</span>
+                        }
+                        else
+                        {
+                            <span class="btn btn-success pull-left " style="margin-right: 10px" ng-click="FixedTariffComprehensiveReportPrint()"> @T("Admin.Print")</span>
+                        }
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="FixedTariffComprehensiveReportView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+
+            <sg-tab title="@T("Admin.SystemReport.StatisticalReports.FixedLineSubscribersCount")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="FixedLineSubscribersCountCtrl">
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.FixedLineSubscribersCount.Year")" name="Year" ng-model="model.Year" multi datasrc="GenericGets/GetAllQReportYears" return-col="Name" return-as="Name"></sg-select>
+
+                    <div id="FixedLineSubscribersCountSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="FixedLineSubscribersCountSearch()">@T("Admin.Search")</span>
+
+                        @if (IsRtl.Equals("true"))
+                        {
+                        <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="FixedLineSubscribersCountPrint()"> @T("Admin.Print")</span>
+                        }
+                        else
+                        {
+                        <span class="btn btn-success pull-left " style="margin-right: 10px" ng-click="FixedLineSubscribersCountPrint()"> @T("Admin.Print")</span>
+                        }
+
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="FixedLineSubscribersCountView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+
+            <sg-tab title="@T("Admin.SystemReport.StatisticalReports.InternetSubscribersCount")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="InternetSubscribersCountCtrl">
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.InternetSubscribersCount.Year")" name="Year" ng-model="model.Year" multi datasrc="GenericGets/GetAllQReportYears" return-col="Name" return-as="Name"></sg-select>
+                    <div id="InternetSubscribersCountSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="InternetSubscribersCountSearch()">@T("Admin.Search")</span>
+
+                        @if (IsRtl.Equals("true"))
+                        {
+                        <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="InternetSubscribersCountPrint()"> @T("Admin.Print")</span>
+                        }
+                        else
+                        {
+                        <span class="btn btn-success pull-left " style="margin-right: 10px" ng-click="InternetSubscribersCountPrint()"> @T("Admin.Print")</span>
+                        }
+
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="InternetSubscribersCountView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+
+            <sg-tab title="@T("Admin.SystemReport.StatisticalReports.PrePaidAndPostPaidCountForOperatorsReport")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="PrePaidAndPostPaidCountForOperatorsReportCtrl">
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.PrePaidAndPostPaidCountForOperatorsReport.Operator")" name="Operator" ng-model="model.Operator" datasrc="GenericGets/GetAllOperators" multi return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.PrePaidAndPostPaidCountForOperatorsReport.Year")" name="Year" ng-model="model.Year" datasrc="GenericGets/GetAllQReportYears" multi return-col="Name" return-as="Name"></sg-select>
+                    <div id="PrePaidAndPostPaidCountForOperatorsReportSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="PrePaidAndPostPaidCountForOperatorsReportSearch()">@T("Admin.Search")</span>
+
+                        @if (IsRtl.Equals("true"))
+                        {
+                        <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="PrePaidAndPostPaidCountForOperatorsReportPrint()"> @T("Admin.Print")</span>
+                        }
+                        else
+                        {
+                        <span class="btn btn-success pull-left " style="margin-right: 10px" ng-click="PrePaidAndPostPaidCountForOperatorsReportPrint()"> @T("Admin.Print")</span>
+                        }
+
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="PrePaidAndPostPaidCountForOperatorsReportView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+
+            <sg-tab title="@T("Admin.SystemReport.StatisticalReports.MarketShare")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="MarketShareCtrl">
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.MarketShare.Operator")" name="Operator" ng-model="model.Operator" datasrc="GenericGets/GetAllOperators" ng-required="true" return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.MarketShare.Year")" name="Year" ng-model="model.Year" datasrc="GenericGets/GetAllQReportYears" return-col="Name" multi return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.MarketShare.Quarter")" id="Quarter" name="Quarter" ng-model="model.Quarter" datasrc="GenericGets/GetAllQuarters" multi return-col="Id" return-as="Name"></sg-select>
+                    <div class="ViewQuestions"></div>
+                    <div id="MarketShareSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="MarketShareSearch()">@T("Admin.Search")</span>
+
+                        @if (IsRtl.Equals("true"))
+                        {
+                        <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="MarketSharePrint()"> @T("Admin.Print")</span>
+                        }
+                        else
+                        {
+                        <span class="btn btn-success pull-left " style="margin-right: 10px" ng-click="MarketSharePrint()"> @T("Admin.Print")</span>
+                        }
+
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="MarketShareView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+
+            <sg-tab title="@T("Admin.SystemReport.StatisticalReports.LicensedCompaniesReport")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="LicensedCompaniesReportCtrl">
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.LicensedCompaniesReport.Operator")" name="Operator" ng-model="model.Operator" datasrc="GenericGets/GetAllOperators" multi return-col="Id" return-as="Name"></sg-select>
+                    <div id="LicensedCompaniesReportSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="LicensedCompaniesReportSearch()">@T("Admin.Search")</span>
+
+                        @if (IsRtl.Equals("true"))
+                        {
+                            <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="LicensedCompaniesReportPrint()"> @T("Admin.Print")</span>
+                        }
+                        else
+                        {
+                            <span class="btn btn-success pull-left " style="margin-right: 10px" ng-click="LicensedCompaniesReportPrint()"> @T("Admin.Print")</span>
+                        }
+
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="LicensedCompaniesReportView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+        }
+
+        else if ((int)Model == 2)
+        {
+            <sg-tab title="@T("Admin.SystemReport.FinancialReports.CurrentAssetsReport")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="CurrentAssetsReportCtrl">
+                    <sg-select label="@T("Admin.SystemReport.FinancialReports.CurrentAssetsReport.Operator")" name="Operator" ng-model="model.Operator" datasrc="GenericGets/GetAllOperators" multi return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.FinancialReports.CurrentAssetsReport.Year")" name="Year" ng-model="model.Year" datasrc="GenericGets/GetAllAnnualQReportYears" multi return-col="Name" return-as="Name"></sg-select>
+                    <div id="CurrentAssetsReportSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="CurrentAssetsReportSearch()">@T("Admin.Search")</span>
+                        <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="CurrentAssetsReportPrint()"> @T("Admin.Print")</span>
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="CurrentAssetsReportView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+
+            <sg-tab title="@T("Admin.SystemReport.FinancialReports.FinancialRatiosReport")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="FinancialRatiosReportCtrl">
+                    <sg-select label="@T("Admin.SystemReport.FinancialReports.FinancialRatiosReport.Ratio")" name="Ratio" ng-model="model.Ratio" datasrc="GenericGets/GetAllRatios" return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.FinancialReports.FinancialRatiosReport.Operator")" name="Operator" ng-model="model.Operator" datasrc="GenericGets/GetAllOperators" multi return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.FinancialReports.FinancialRatiosReport.Year")" name="Year" ng-model="model.Year" datasrc="GenericGets/GetAllAnnualQReportYears" multi return-col="Name" return-as="Name"></sg-select>
+                    <div id="FinancialRatiosReportSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="FinancialRatiosReportSearch()">@T("Admin.Search")</span>
+                        <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="FinancialRatiosReportPrint()"> @T("Admin.Print")</span>
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="FinancialRatiosReportView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+
+            <sg-tab title="@T("Admin.SystemReport.FinancialReports.RevenueReport")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="RevenueReportCtrl">
+                    <sg-select label="@T("Admin.SystemReport.FinancialReports.RevenueReport.Service")" name="Service" ng-model="model.Service" datasrc="GenericGets/GetAllRevenueServices" multi return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.FinancialReports.RevenueReport.Operator")" name="Operator" ng-model="model.Operator" datasrc="GenericGets/GetAllOperators" multi return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.FinancialReports.RevenueReport.Year")" name="Year" ng-model="model.Year" datasrc="GenericGets/GetAllAnnualQReportYears" multi return-col="Name" return-as="Name"></sg-select>
+                    <div id="RevenueReportSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="RevenueReportSearch()">@T("Admin.Search")</span>
+                        <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="RevenueReportPrint()"> @T("Admin.Print")</span>
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="RevenueReportView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+        }
+        else if ((int)Model == 3)
+        {
+            <sg-tab title="@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="FollowupSurveyReportCtrl">
+                    <sg-select label="@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Operator")" name="Operator" ng-model="model.Operator" datasrc="GenericGets/GetAllOperators" multi return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.ReportPeriod")" ng-required="true" name="ReportPeriod" ng-model="model.ReportPeriod" datasrc="GenericGets/GetAllReportPeriods" return-col="Id" return-as="Name"></sg-select>
+                    <div ng-if="showDeleteYear(model.ReportPeriod)">
+                        <sg-select label="@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Year")" name="Year" ng-required="true" ng-model="model.Year" datasrc="{{atribut}}" multi return-col="Name" return-as="Name"></sg-select>
+                    </div>
+                    <div ng-if="showDeleteQuarter(model.ReportPeriod)">
+                        <sg-select label="@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Quarter")" name="Quarter" ng-required="true" ng-model="model.Quarter" datasrc="GenericGets/GetAllQuarters" multi return-col="Id" return-as="Name"></sg-select>
+                    </div>
+                    <sg-select label="@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Status")" name="Status" ng-model="model.Status" datasrc="GenericGets/GetAllReportsStatus" return-col="Id" return-as="Name"></sg-select>
+                    <div class="ReportPeriod" style="text-align: center;"></div>
+                    <div id="FollowupSurveyReportSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="FollowupSurveyReportSearch()">@T("Admin.Search")</span>
+
+                        @if (IsRtl.Equals("true"))
+                        {
+                        <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="FollowupSurveyReportPrint()"> @T("Admin.Print")</span>
+                        }
+                        else
+                        {
+                        <span class="btn btn-success pull-left " style="margin-right: 10px" ng-click="FollowupSurveyReportPrint()"> @T("Admin.Print")</span>
+                        }
+
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="FollowupSurveyReportView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+        }
+        else if ((int)Model == 4)
+        {
+            <sg-tab title="@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="QuarterlyPerformanceIndicatorsCtrl">
+                    <sg-select label="@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.OpratorId")" name="OpratorIds" multi ng-model="model.OpratorIds" datasrc="GenericGets/GetAllOperators" return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.Year")" id="YearId" name="Year" ng-model="model.Year" datasrc="GenericGets/GetAllQReportYears" return-col="Name" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.Quarter")" id="Quarter" name="Quarter" multi ng-model="model.Quarter" datasrc="GenericGets/GetAllQuarters" return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.KPI")" name="KPI" multi ng-model="model.KPI" datasrc="GenericGets/GetAllQuarterKPIs" return-col="Id" return-as="Name"></sg-select>
+                    <div id="QuarterlyPerformanceIndicatorsSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="QuarterlyPerformanceIndicatorsSearch()">@T("Admin.Search")</span>
+
+                        @if (IsRtl.Equals("true"))
+                        {
+                        <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="QuarterlyPerformanceIndicatorsPrint()"> @T("Admin.Print")</span>
+                        }
+                        else
+                        {
+                        <span class="btn btn-success pull-left " style="margin-right: 10px" ng-click="QuarterlyPerformanceIndicatorsPrint()"> @T("Admin.Print")</span>
+                        }
+
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="QuarterlyPerformanceIndicatorsView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+
+            <sg-tab title="@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="AnnualPerformanceIndicatorsCtrl">
+                    <sg-select label="@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.OpratorId")" name="OpratorIds" multi ng-model="model.OpratorIds" datasrc="GenericGets/GetAllOperators" return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.Year")" id="YearId" name="Year" multi ng-model="model.Year" datasrc="GenericGets/GetAllAnnualQReportYears" return-col="Name" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.KPI")" name="KPI" multi ng-model="model.KPI" datasrc="GenericGets/GetAllAnnualKPIs" return-col="Id" return-as="Name"></sg-select>
+                    <div id="AnnualPerformanceIndicatorsSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="AnnualPerformanceIndicatorsSearch()">@T("Admin.Search")</span>
+
+                        @if (IsRtl.Equals("true"))
+                        {
+                        <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="AnnualPerformanceIndicatorsPrint()"> @T("Admin.Print")</span>
+                        }
+                        else
+                        {
+                        <span class="btn btn-success pull-left " style="margin-right: 10px" ng-click="AnnualPerformanceIndicatorsPrint()"> @T("Admin.Print")</span>
+                        }
+
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="AnnualPerformanceIndicatorsView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+
+            <sg-tab title="@T("Admin.SystemReport.PerformanceIndicatorsReports.FinancialPerformanceIndicators")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="FinancialPerformanceIndicatorsCtrl">
+                    <sg-select label="@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.OpratorId")" name="OpratorIds" multi ng-model="model.OpratorIds" datasrc="GenericGets/GetAllOperators" return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.Year")" id="YearId" name="Year" multi ng-model="model.Year" datasrc="GenericGets/GetAllFinancialReportYears" return-col="Name" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.KPI")" name="KPI" multi ng-model="model.KPI" datasrc="GenericGets/GetAllFinancialKPIs" return-col="Id" return-as="Name"></sg-select>
+                    <div id="FinancialPerformanceIndicatorsSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="FinancialPerformanceIndicatorsSearch()">@T("Admin.Search")</span>
+
+                        @if (IsRtl.Equals("true"))
+                        {
+                        <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="FinancialPerformanceIndicatorsPrint()"> @T("Admin.Print")</span>
+                        }
+                        else
+                        {
+                        <span class="btn btn-success pull-left " style="margin-right: 10px" ng-click="FinancialPerformanceIndicatorsPrint()"> @T("Admin.Print")</span>
+                        }
+
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="FinancialPerformanceIndicatorsView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+
+            <sg-tab title="@T("Admin.SystemReport.StatisticalReports.MobileTariff")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="MobileTariffCtrl">
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.MobileTariff.Operator")" name="OperatorId" ng-model="model.OperatorId" multi datasrc="GenericGets/GetAllOperators" return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.StatisticalReports.MobileTariff.Year")" name="Year" ng-model="model.Year" multi datasrc="GenericGets/GetAllMobileTariffReportYears" return-col="Name" return-as="Name"></sg-select>
+                    @*<sg-select label="@T("Admin.SystemReport.StatisticalReports.MobileTariff.KPI")" name="KPI" multi ng-model="model.KPI" datasrc="GenericGets/GetAllMobileTariffKPIs" return-col="Id" return-as="Name"></sg-select>*@
+
+                    <div id="MobileTariffSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="MobileTariffSearch()">@T("Admin.Search")</span>
+
+                        @if (IsRtl.Equals("true"))
+                        {
+                        <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="MobileTariffPrint()"> @T("Admin.Print")</span>
+                        }
+                        else
+                        {
+                        <span class="btn btn-success pull-left " style="margin-right: 10px" ng-click="MobileTariffPrint()"> @T("Admin.Print")</span>
+                        }
+
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="MobileTariffView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+        }
+        else if ((int)Model == 5)
+        {
+            <sg-tab title="@T("Admin.SystemReport.MailReports.MailComprehensiveReport")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="MailComprehensiveReportCtrl">
+                    <sg-select label="@T("Admin.SystemReport.MailReports.MailComprehensiveReport.Year")" name="Year" ng-model="model.Year" datasrc="GenericGets/GetAllMailReportYears" multi return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.MailReports.MailComprehensiveReport.Category")" name="Category" ng-model="model.Category" datasrc="GenericGets/GetAllMailOperatorsCategories" return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.MailReports.MailComprehensiveReport.MailOperator")" name="MailOperator" ng-model="model.MailOperator" filter="{Category : model.Category }" datasrc="GenericGets/GetAllMailOperators" multi return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.MailReports.MailComprehensiveReport.MailQTitle")" name="MailQTitle" ng-model="model.MailQTitle" datasrc="GenericGets/GetAllMailQTitles" multi return-col="Id" return-as="Name"></sg-select>
+                    <div id="MailComprehensiveReportSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="MailComprehensiveReportSearch()">@T("Admin.Search")</span>
+
+                        @if (IsRtl.Equals("true"))
+                        {
+                            <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="MailComprehensiveReportPrint()"> @T("Admin.Print")</span>
+                        }
+                        else
+                        {
+                            <span class="btn btn-success pull-left " style="margin-right: 10px" ng-click="MailComprehensiveReportPrint()"> @T("Admin.Print")</span>
+                        }
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="MailComprehensiveReportView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+
+            <sg-tab title="@T("Admin.SystemReport.MailReports.AverageIndicatorsForMailsReport")">
+                <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="AverageIndicatorsForMailsReportCtrl">
+                    <sg-select label="@T("Admin.SystemReport.MailReports.AverageIndicatorsForMailsReport.Year")" name="Year" ng-model="model.Year" datasrc="GenericGets/GetAllMailReportYears" return-col="Id" return-as="Name"></sg-select>
+                    <sg-select label="@T("Admin.SystemReport.MailReports.AverageIndicatorsForMailsReport.Category")" name="Category" ng-model="model.Category" datasrc="GenericGets/GetAllMailOperatorsCategories" return-col="Id" return-as="Name"></sg-select>
+                    <div id="AverageIndicatorsForMailsReportSearchButtons" class="pull-right">
+                        <span class="btn btn-success pull-right " ng-click="AverageIndicatorsForMailsReportSearch()">@T("Admin.Search")</span>
+
+                        @if (IsRtl.Equals("true"))
+                        {
+                            <span class="btn btn-success pull-left " style="margin-left: 10px" ng-click="AverageIndicatorsForMailsReportPrint()"> @T("Admin.Print")</span>
+                        }
+                        else
+                        {
+                            <span class="btn btn-success pull-left " style="margin-right: 10px" ng-click="AverageIndicatorsForMailsReportPrint()"> @T("Admin.Print")</span>
+                        }
+                    </div>
+                    <div class="Space" style="height:50px;"></div>
+                    <div class="box-body">
+                        <div id="AverageIndicatorsForMailsReportView">
+                        </div>
+                    </div>
+                </form>
+            </sg-tab>
+        }
+    </sg-tabs>
+</sg-page>
+
+<script>
+    function showChildGrid(parentRowID, parentRowKey) {
+        if (parentRowID == undefined || parentRowKey == undefined)
+            return;
+        // the event handler on expanding parent row receives two parameters
+        // the ID of the grid tow  and the primary key of the row
+        switch (subGridTable) {
+            case "GridPrePaidAndPostPaidCountForOperatorsReport":
+                var rowData = $(this).getRowData(parentRowKey);
+                //var sectorId = rowData['SectorId'];
+                childGridID = parentRowID + "_table_InterventionSector";
+                childGridPagerID = parentRowID + "_pager_InterventionSector";
+                // send the parent row primary key to the server so that we know which grid to show
+                var childGridURL = '/Admin/SystemReport/SubGridPrePaidAndPostPaidCountForOperatorsReport';
+                childGridURL += "?Operator=" + rowData['Id'];
+                childGridURL += "&Year=" + rowData['Year'];
+                //childGridURL = childGridURL + "&parentRowID=" + encodeURIComponent(parentRowKey)
+
+                // add a table and pager HTML elements to the parent grid row - we will render the child grid here
+                $('#' + parentRowID).append('<table id=' + childGridID + '></table><div id=' + childGridPagerID + ' class=scroll></div>');
+                if(@IsRtl == true){
+                    var model =
+                        [
+                            { label: 'Id', name: 'Id', align: "center", key: true, hidden: true },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.SubGridPrePaidAndPostPaidCountForOperatorsReport.Q")', name: 'Q', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.SubGridPrePaidAndPostPaidCountForOperatorsReport.PrePaidCount")', name: 'StrPrePaidCount', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.SubGridPrePaidAndPostPaidCountForOperatorsReport.PostPaidCount")', name: 'StrPostPaidCount', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.SubGridPrePaidAndPostPaidCountForOperatorsReport.TotalCount")', name: 'StrTotalCount', align: "center" }
+                        ];
+                }
+                else{
+                    var model =
+                        [
+                            { label: 'Id', name: 'Id', align: "center", key: true, hidden: true },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.SubGridPrePaidAndPostPaidCountForOperatorsReport.TotalCount")', name: 'StrTotalCount', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.SubGridPrePaidAndPostPaidCountForOperatorsReport.PostPaidCount")', name: 'StrPostPaidCount', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.SubGridPrePaidAndPostPaidCountForOperatorsReport.PrePaidCount")', name: 'StrPrePaidCount', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.SubGridPrePaidAndPostPaidCountForOperatorsReport.Q")', name: 'Q', align: "center" },
+                        ];
+                }
+                buildGrid(model, childGridID, childGridURL, '@int.MaxValue', "",
+                    false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 2, undefined, "PrintJqGrid")
+                break;
+
+            case "GridLicensedCompaniesReport":
+                var rowData = $(this).getRowData(parentRowKey);
+                //var sectorId = rowData['SectorId'];
+                childGridID = parentRowID + "_table_InterventionSector";
+                childGridPagerID = parentRowID + "_pager_InterventionSector";
+                // send the parent row primary key to the server so that we know which grid to show
+                var childGridURL = '/Admin/SystemReport/SubGridLicensedCompaniesReport';
+                childGridURL += "?Operator=" + rowData['Id'];
+                //childGridURL = childGridURL + "&parentRowID=" + encodeURIComponent(parentRowKey)
+
+                // add a table and pager HTML elements to the parent grid row - we will render the child grid here
+                $('#' + parentRowID).append('<table id=' + childGridID + '></table><div id=' + childGridPagerID + ' class=scroll></div>');
+                if(@IsRtl == true){
+                    var model =
+                        [
+                            { label: 'Id', name: 'Id', align: "center", key: true, hidden: true },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.SubGridLicensedCompaniesReport.PartnerName")', name: 'PartnerName', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.SubGridLicensedCompaniesReport.PartnerStatus")', name: 'PartnerStatus', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.SubGridLicensedCompaniesReport.partnershare")', name: 'partnershareStr', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.SubGridLicensedCompaniesReport.PartnerNationality")', name: 'PartnerNationality', align: "center" }
+                        ];
+                }
+                else{
+                    var model =
+                        [
+                            { label: 'Id', name: 'Id', align: "center", key: true, hidden: true },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.SubGridLicensedCompaniesReport.PartnerNationality")', name: 'PartnerNationality', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.SubGridLicensedCompaniesReport.partnershare")', name: 'partnershareStr', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.SubGridLicensedCompaniesReport.PartnerStatus")', name: 'PartnerStatus', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.SubGridLicensedCompaniesReport.PartnerName")', name: 'PartnerName', align: "center" },
+                        ];
+                }
+                buildGrid(model, childGridID, childGridURL, '@int.MaxValue', "",
+                    false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 2, undefined, "PrintJqGrid")
+                break;
+
+                break;
+        }
+        function showChildGrid(parentRowID, parentRowKey) { }
+    }
+
+    /************************************************************************* ComprehensiveReport *************************************************************************/
+
+    var app = SeagullApp.controller('ComprehensiveReportCtrl', function ($scope, $filter, $http, $timeout, $rootScope) {
+
+        $scope.ComprehensiveReportPrint = function () {
+            var divToPrint = document.getElementById('ComprehensiveReportView');
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+            var y = '</scr' + 'ipt>';
+            var onload = ""; //'<script>$(document).ready(function(){window.print()});' + y + '';
+            var scripts = '<link href="@Url.Content("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/styles.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css")" rel="stylesheet" />';
+            //scripts += '<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">' + y + '';
+            var page = scripts + onload + '<html><body style="direction: rtl;" onload="window.print()">' + divToPrint.innerHTML + '</body></html>'
+            newWin.document.write(page);
+            newWin.document.close();
+            settimeout(function () { newwin.close(); }, 10);
+        }
+
+        $scope.ComprehensiveReportSearch = function (canprint, type) {
+            var _urlComprehensiveReport = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/ComprehensiveReport', false,false, $scope, "", []);
+
+            $scope.SearchPrint = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/ComprehensiveReport', true, false, $scope, "", $('#jqGridComprehensiveReport').getGridParam("postData"));
+                return;
+            }
+            $scope.SearchPrintPdf = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/ComprehensiveReport', false,true, $scope, "", $('#jqGridComprehensiveReport').getGridParam("postData"));
+                return;
+            }
+
+            if(@IsRtl == true){
+                var model =
+                    [
+                        { label: '@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.Operator")', name: 'OperatorName', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.Year")', name: 'YearStr', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.Quarter")', name: 'Q', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.QTitle")', name: 'QTitle', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.MainQuestion")', name: 'MainQuestion', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.SubQuestion")', name: 'SubQuestion', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.Answer")', name: 'Answer', align: "center" }
+                    ];
+            }
+            else{
+                var model =
+                    [
+                        { label: '@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.Answer")', name: 'Answer', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.SubQuestion")', name: 'SubQuestion', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.MainQuestion")', name: 'MainQuestion', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.QTitle")', name: 'QTitle', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.Quarter")', name: 'Q', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.Year")', name: 'YearStr', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.ComprehensiveReport.Operator")', name: 'OperatorName', align: "center" }
+                    ];
+            }
+
+            subGridTable = "GridComprehensiveReport";
+            BuildReportDiv("ComprehensiveReportView", "jqGridComprehensiveReport", "jqGridComprehensiveReportPager");
+            buildGrid(model, "jqGridComprehensiveReport", _urlComprehensiveReport, '@int.MaxValue', "jqGridComprehensiveReportPager",
+            false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, null, "ComprehensiveReportSearchButtons**SearchPrint('jqGridComprehensiveReport', 1)","ComprehensiveReportSearchButtons**SearchPrintPdf('jqGridComprehensiveReport', 1)")
+        }
+    });
+
+    /************************************************************************* AnnualComprehensiveReport *************************************************************************/
+
+    var app = SeagullApp.controller('AnnualComprehensiveReportCtrl', function ($scope, $filter, $http, $timeout, $rootScope) {
+
+        $scope.AnnualComprehensiveReportPrint = function () {
+            var divToPrint = document.getElementById('AnnualComprehensiveReportView');
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+            var y = '</scr' + 'ipt>';
+            var onload = ""; //'<script>$(document).ready(function(){window.print()});' + y + '';
+            var scripts = '<link href="@Url.Content("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/styles.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css")" rel="stylesheet" />';
+            //scripts += '<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">' + y + '';
+            var page = scripts + onload + '<html><body style="direction: rtl;" onload="window.print()">' + divToPrint.innerHTML + '</body></html>'
+            newWin.document.write(page);
+            newWin.document.close();
+            settimeout(function () { newwin.close(); }, 10);
+        }
+
+        $scope.AnnualComprehensiveReportSearch = function (canprint, type) {
+
+            var _urlAnnualComprehensiveReport = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/AnnualComprehensiveReport', false, false, $scope, "", []);
+
+            $scope.SearchPrint = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/AnnualComprehensiveReport', true, false, $scope, "", $('#jqGridAnnualComprehensiveReport').getGridParam("postData"));
+                return;
+            }
+            $scope.SearchPrintPdf = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/AnnualComprehensiveReport', false,true, $scope, "", $('#jqGridAnnualComprehensiveReport').getGridParam("postData"));
+                return;
+            }
+
+            if(@IsRtl == true){
+                var model =
+                    [
+                        { label: '@T("Admin.SystemReport.StatisticalReports.AnnualComprehensiveReport.Operator")', name: 'OperatorName', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.AnnualComprehensiveReport.Year")', name: 'YearStr', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.AnnualComprehensiveReport.AnnualQTitle")', name: 'AnnualQTitle', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.AnnualComprehensiveReport.AnnualMainQuestion")', name: 'AnnualMainQuestion', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.AnnualComprehensiveReport.AnnualSubQuestion")', name: 'AnnualSubQuestion', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.AnnualComprehensiveReport.Answer")', name: 'Answer', align: "center" }
+                    ];
+            }
+            else{
+                var model =
+                    [
+                        { label: '@T("Admin.SystemReport.StatisticalReports.AnnualComprehensiveReport.Answer")', name: 'Answer', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.AnnualComprehensiveReport.AnnualSubQuestion")', name: 'AnnualSubQuestion', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.AnnualComprehensiveReport.AnnualMainQuestion")', name: 'AnnualMainQuestion', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.AnnualComprehensiveReport.AnnualQTitle")', name: 'AnnualQTitle', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.AnnualComprehensiveReport.Year")', name: 'YearStr', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.AnnualComprehensiveReport.Operator")', name: 'OperatorName', align: "center" }
+                    ];
+            }
+
+            subGridTable = "GridAnnualComprehensiveReport";
+            BuildReportDiv("AnnualComprehensiveReportView", "jqGridAnnualComprehensiveReport", "jqGridAnnualComprehensiveReportPager");
+            buildGrid(model, "jqGridAnnualComprehensiveReport", _urlAnnualComprehensiveReport, '@int.MaxValue', "jqGridAnnualComprehensiveReportPager",
+            false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, null, "AnnualComprehensiveReportSearchButtons**SearchPrint('jqGridAnnualComprehensiveReport', 1)","AnnualComprehensiveReportSearchButtons**SearchPrintPdf('jqGridAnnualComprehensiveReport', 1)")
+        }
+    });
+
+    /************************************************************************* MobileTariffComprehensiveReport *************************************************************************/
+
+    var app = SeagullApp.controller('MobileTariffComprehensiveReportCtrl', function ($scope, $filter, $http, $timeout, $rootScope) {
+
+        $scope.MobileTariffComprehensiveReportPrint = function () {
+            var divToPrint = document.getElementById('MobileTariffComprehensiveReportView');
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+            var y = '</scr' + 'ipt>';
+            var onload = ""; //'<script>$(document).ready(function(){window.print()});' + y + '';
+            var scripts = '<link href="@Url.Content("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/styles.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css")" rel="stylesheet" />';
+            //scripts += '<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">' + y + '';
+            var page = scripts + onload + '<html><body style="direction: rtl;" onload="window.print()">' + divToPrint.innerHTML + '</body></html>'
+            newWin.document.write(page);
+            newWin.document.close();
+            settimeout(function () { newwin.close(); }, 10);
+        }
+
+        $scope.MobileTariffComprehensiveReportSearch = function (canprint, type) {
+            ///////////////////////////////////
+            if ($scope.form.PackageCategory.$viewValue == undefined){
+                if (@IsRtl == true)
+                    $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 20px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-right:46%;'>@T("Admin.MobileTariffComprehensiveReport.PackageCategory")<h2>");
+                else
+                    $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 14px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-left:46%;'>@T("Admin.MobileTariffComprehensiveReport.PackageCategory")<h2>");
+
+                RemoveLoading();
+            }
+            else{
+                $("div.ViewQuestions").html("");
+
+                RemoveLoading();
+                ///////////////////////////////////
+                var _urlMobileTariffComprehensiveReport = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/MobileTariffComprehensiveReport', false, false, $scope, "", []);
+
+                $scope.SearchPrint = function (tableName, type) {
+                    window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/MobileTariffComprehensiveReport', true, false, $scope, "", $('#jqGridMobileTariffComprehensiveReport').getGridParam("postData"));
+                    return;
+                }
+                $scope.SearchPrintPdf = function (tableName, type) {
+                    window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/MobileTariffComprehensiveReport', false,true, $scope, "", $('#jqGridMobileTariffComprehensiveReport').getGridParam("postData"));
+                    return;
+                }
+
+                if(@IsRtl == true){
+                    if($scope.model.PackageCategory == 1){
+                        var model =
+                            [
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.OperatorName")', name: 'OperatorName', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.Year")', name: 'Year', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.PackageNameEn")', name: 'PackageNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.PackageCategory")', name: 'PackageCategoryStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.PackageType")', name: 'PackageTypeStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.QuestionNameEn")', name: 'QuestionNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.Answer")', name: 'Answer', align: "center" }
+                            ];
+                    }
+                    else{
+                        var model =
+                            [
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.OperatorName")', name: 'OperatorName', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.Year")', name: 'Year', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.PackageNameEn")', name: 'PackageNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.PackageCategory")', name: 'PackageCategoryStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.PackageType")', name: 'PackageTypeStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.Technology")', name: 'TechnologyStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.QuestionNameEn")', name: 'QuestionNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.Answer")', name: 'Answer', align: "center" }
+                            ];
+                    }
+                }
+                else{
+                    if($scope.model.PackageCategory == 1){
+                        var model =
+                            [
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.Answer")', name: 'Answer', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.QuestionNameEn")', name: 'QuestionNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.PackageType")', name: 'PackageTypeStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.PackageCategory")', name: 'PackageCategoryStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.PackageNameEn")', name: 'PackageNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.Year")', name: 'Year', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.OperatorName")', name: 'OperatorName', align: "center" }
+                            ];
+                    }
+                    else{
+                        var model =
+                            [
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.Answer")', name: 'Answer', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.QuestionNameEn")', name: 'QuestionNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.Technology")', name: 'TechnologyStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.PackageType")', name: 'PackageTypeStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.PackageCategory")', name: 'PackageCategoryStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.PackageNameEn")', name: 'PackageNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.Year")', name: 'Year', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariffComprehensiveReport.OperatorName")', name: 'OperatorName', align: "center" }
+                            ];
+                    }
+                }
+
+                subGridTable = "GridMobileTariffComprehensiveReport";
+                BuildReportDiv("MobileTariffComprehensiveReportView", "jqGridMobileTariffComprehensiveReport", "jqGridMobileTariffComprehensiveReportPager");
+                buildGrid(model, "jqGridMobileTariffComprehensiveReport", _urlMobileTariffComprehensiveReport, '@int.MaxValue', "jqGridMobileTariffComprehensiveReportPager",
+                false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, null, "MobileTariffComprehensiveReportSearchButtons**SearchPrint('jqGridMobileTariffComprehensiveReport', 1)","MobileTariffComprehensiveReportSearchButtons**SearchPrintPdf('jqGridMobileTariffComprehensiveReport', 1)")
+            }
+        }
+    });
+
+    /************************************************************************* FixedTariffComprehensiveReport *************************************************************************/
+
+    var app = SeagullApp.controller('FixedTariffComprehensiveReportCtrl', function ($scope, $filter, $http, $timeout, $rootScope) {
+
+        $scope.FixedTariffComprehensiveReportPrint = function () {
+            var divToPrint = document.getElementById('FixedTariffComprehensiveReportView');
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+            var y = '</scr' + 'ipt>';
+            var onload = ""; //'<script>$(document).ready(function(){window.print()});' + y + '';
+            var scripts = '<link href="@Url.Content("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/styles.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css")" rel="stylesheet" />';
+            //scripts += '<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">' + y + '';
+            var page = scripts + onload + '<html><body style="direction: rtl;" onload="window.print()">' + divToPrint.innerHTML + '</body></html>'
+            newWin.document.write(page);
+            newWin.document.close();
+            settimeout(function () { newwin.close(); }, 10);
+        }
+
+        $scope.showDeleteCategory = function (classification) {
+            if (classification == 2) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+        $scope.showDeleteType = function (classification, category) {
+            if (classification == 1 || (classification == 2 && (category == 1 || category == 2))) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+        $scope.showDeleteTechnology = function (classification, category) {
+            if (classification == 2 && category == 1) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+        $scope.showDeleteService = function (classification, category) {
+            if (classification == 2 && category == 2) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+        $scope.FixedTariffComprehensiveReportSearch = function (canprint, type) {
+            ///////////////////////////////////
+            if ($scope.form.Classification.$viewValue == 1) {
+                if ($scope.form.Type.$viewValue == "" || $scope.form.Type.$viewValue == undefined) {
+                    if (@IsRtl == true)
+                        $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 20px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-right:46%;'>@T("Admin.FixedTariffComprehensiveReport.Type")<h2>");
+                    else
+                        $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 14px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-left:46%;'>@T("Admin.FixedTariffComprehensiveReport.Type")<h2>");
+                    RemoveLoading();
+                }
+                else {
+                    $("div.ViewQuestions").html("");
+                    DisplayReport();
+                }
+            }
+            else if ($scope.form.Classification.$viewValue == 2) {
+                if ($scope.form.Category.$viewValue == "" || $scope.form.Category.$viewValue == undefined) {
+                    if (@IsRtl == true)
+                        $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 20px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-right:46%;'>@T("Admin.FixedTariffComprehensiveReport.Category")<h2>");
+                    else
+                        $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 14px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-left:46%;'>@T("Admin.FixedTariffComprehensiveReport.Category")<h2>");
+                    RemoveLoading();
+                }
+                else if ($scope.form.Category.$viewValue == 1) {
+                    if ($scope.form.Type.$viewValue == "" || $scope.form.Type.$viewValue == undefined) {
+                        if (@IsRtl == true)
+                            $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 20px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-right:46%;'>@T("Admin.FixedTariffComprehensiveReport.Type")<h2>");
+                        else
+                            $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 14px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-left:46%;'>@T("Admin.FixedTariffComprehensiveReport.Type")<h2>");
+                        RemoveLoading();
+                    }
+                    else if ($scope.form.Type.$viewValue == 1) {
+                        if ($scope.form.Technology.$viewValue == "" || $scope.form.Technology.$viewValue == undefined) {
+                            if (@IsRtl == true)
+                                $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 20px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-right:46%;'>@T("Admin.FixedTariffComprehensiveReport.Technology")<h2>");
+                            else
+                                $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 14px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-left:46%;'>@T("Admin.FixedTariffComprehensiveReport.Technology")<h2>");
+                            RemoveLoading();
+                        }
+                        else {
+                            $("div.ViewQuestions").html("");
+                            DisplayReport();
+                        }
+                    }
+                    else if ($scope.form.Type.$viewValue == 2) {
+                        if ($scope.form.Technology.$viewValue == "" || $scope.form.Technology.$viewValue == undefined) {
+                            if (@IsRtl == true)
+                                $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 20px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-right:46%;'>@T("Admin.FixedTariffComprehensiveReport.Service")<h2>");
+                            else
+                                $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 14px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-left:46%;'>@T("Admin.FixedTariffComprehensiveReport.Service")<h2>");
+                            RemoveLoading();
+                        }
+                        else {
+                            $("div.ViewQuestions").html("");
+                            DisplayReport();
+                        }
+                    }
+                }
+                else {
+                    if ($scope.form.Type.$viewValue == "" || $scope.form.Type.$viewValue == undefined) {
+                        if (@IsRtl == true)
+                            $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 20px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-right:46%;'>@T("Admin.FixedTariffComprehensiveReport.Type")<h2>");
+                        else
+                            $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 14px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-left:46%;'>@T("Admin.FixedTariffComprehensiveReport.Type")<h2>");
+                        RemoveLoading();
+                    }
+                    else if ($scope.form.Type.$viewValue == 1) {
+                        if ($scope.form.Service.$viewValue == "" || $scope.form.Service.$viewValue == undefined) {
+                            if (@IsRtl == true)
+                                $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 20px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-right:46%;'>@T("Admin.FixedTariffComprehensiveReport.Technology")<h2>");
+                            else
+                                $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 14px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-left:46%;'>@T("Admin.FixedTariffComprehensiveReport.Technology")<h2>");
+                            RemoveLoading();
+                        }
+                        else {
+                            $("div.ViewQuestions").html("");
+                            DisplayReport();
+                        }
+                    }
+                    else if ($scope.form.Type.$viewValue == 2) {
+                        if ($scope.form.Service.$viewValue == "" || $scope.form.Service.$viewValue == undefined) {
+                            if (@IsRtl == true)
+                                $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 20px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-right:46%;'>@T("Admin.FixedTariffComprehensiveReport.Service")<h2>");
+                            else
+                                $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 14px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-left:46%;'>@T("Admin.FixedTariffComprehensiveReport.Service")<h2>");
+                            RemoveLoading();
+                        }
+                        else {
+                            $("div.ViewQuestions").html("");
+                            DisplayReport();
+                        }
+                    }
+                }
+            }
+            else {
+                if (@IsRtl == true)
+                    $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 20px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-right:46%;'>@T("Admin.FixedTariffComprehensiveReport.Classification")<h2>");
+                else
+                    $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 14px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-left:46%;'>@T("Admin.FixedTariffComprehensiveReport.Classification")<h2>");
+
+                RemoveLoading();
+            }
+            ///////////////////////////////////
+
+            function DisplayReport(){
+
+                var _urlFixedTariffComprehensiveReport = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/FixedTariffComprehensiveReport', false, false, $scope, "", []);
+
+                $scope.SearchPrint = function (tableName, type) {
+                    window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/FixedTariffComprehensiveReport', true, false, $scope, "", $('#jqGridFixedTariffComprehensiveReport').getGridParam("postData"));
+                    return;
+                }
+                $scope.SearchPrintPdf = function (tableName, type) {
+                    window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/FixedTariffComprehensiveReport', false,true, $scope, "", $('#jqGridFixedTariffComprehensiveReport').getGridParam("postData"));
+                    return;
+                }
+
+                if(@IsRtl == false){
+                    if($scope.model.Classification == 1){
+                        var model =
+                            [
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Answer")', name: 'Answer', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.QuestionNameEn")', name: 'QuestionNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Type")', name: 'TypeStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Classification")', name: 'ClassificationStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.PackageNameEn")', name: 'PackageNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Year")', name: 'Year', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.OperatorName")', name: 'OperatorName', align: "center" }
+                            ];
+                    }
+                    else if($scope.model.Classification == 2 && $scope.model.Category == 1){
+                        var model =
+                            [
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Answer")', name: 'Answer', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.QuestionNameEn")', name: 'QuestionNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Technology")', name: 'TechnologyStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Type")', name: 'TypeStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Category")', name: 'CategoryStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Classification")', name: 'ClassificationStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.PackageNameEn")', name: 'PackageNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Year")', name: 'Year', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.OperatorName")', name: 'OperatorName', align: "center" }
+                            ];
+                    }
+                    else{
+                        var model =
+                            [
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Answer")', name: 'Answer', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.QuestionNameEn")', name: 'QuestionNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Service")', name: 'ServiceStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Type")', name: 'TypeStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Category")', name: 'CategoryStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Classification")', name: 'ClassificationStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.PackageNameEn")', name: 'PackageNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Year")', name: 'Year', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.OperatorName")', name: 'OperatorName', align: "center" },
+                            ];
+                    }
+                }
+                else{
+                    if($scope.model.Classification == 1){
+                        var model =
+                            [
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.OperatorName")', name: 'OperatorName', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Year")', name: 'Year', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.PackageNameEn")', name: 'PackageNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Classification")', name: 'ClassificationStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Type")', name: 'TypeStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.QuestionNameEn")', name: 'QuestionNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Answer")', name: 'Answer', align: "center" }
+                            ];
+                    }
+                    else if($scope.model.Classification == 2 && $scope.model.Category == 1){
+                        var model =
+                            [
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.OperatorName")', name: 'OperatorName', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Year")', name: 'Year', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.PackageNameEn")', name: 'PackageNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Classification")', name: 'ClassificationStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Category")', name: 'CategoryStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Type")', name: 'TypeStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Technology")', name: 'TechnologyStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.QuestionNameEn")', name: 'QuestionNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Answer")', name: 'Answer', align: "center" }
+                            ];
+                    }
+                    else{
+                        var model =
+                            [
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.OperatorName")', name: 'OperatorName', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Year")', name: 'Year', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.PackageNameEn")', name: 'PackageNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Classification")', name: 'ClassificationStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Category")', name: 'CategoryStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Type")', name: 'TypeStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Service")', name: 'ServiceStr', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.QuestionNameEn")', name: 'QuestionNameEn', align: "center" },
+                                { label: '@T("Admin.SystemReport.StatisticalReports.FixedTariffComprehensiveReport.Answer")', name: 'Answer', align: "center" }
+                            ];
+                    }
+                }
+
+                subGridTable = "GridFixedTariffComprehensiveReport";
+                BuildReportDiv("FixedTariffComprehensiveReportView", "jqGridFixedTariffComprehensiveReport", "jqGridFixedTariffComprehensiveReportPager");
+                buildGrid(model, "jqGridFixedTariffComprehensiveReport", _urlFixedTariffComprehensiveReport, '@int.MaxValue', "jqGridFixedTariffComprehensiveReportPager",
+                    false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, null, "FixedTariffComprehensiveReportSearchButtons**SearchPrint('jqGridFixedTariffComprehensiveReport', 1)","FixedTariffComprehensiveReportSearchButtons**SearchPrintPdf('jqGridFixedTariffComprehensiveReport', 1)")
+            }
+        }
+    });
+
+    /************************************************************************* FixedLineSubscribersCount *************************************************************************/
+
+    var app = SeagullApp.controller('FixedLineSubscribersCountCtrl', function ($scope, $filter, $http, $timeout, $rootScope) {
+
+        $scope.FixedLineSubscribersCountPrint = function () {
+            var divToPrint = document.getElementById('FixedLineSubscribersCountView');
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+            var y = '</scr' + 'ipt>';
+            var onload = ""; //'<script>$(document).ready(function(){window.print()});' + y + '';
+            var scripts = '<link href="@Url.Content("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/styles.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css")" rel="stylesheet" />';
+            //scripts += '<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">' + y + '';
+            var page = scripts + onload + '<html><body style="direction: rtl;" onload="window.print()">' + divToPrint.innerHTML + '</body></html>'
+            newWin.document.write(page);
+            newWin.document.close();
+            settimeout(function () { newwin.close(); }, 10);
+        }
+
+        $scope.FixedLineSubscribersCountSearch = function (canprint, type) {
+            var _urlFixedLineSubscribersCount = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/FixedLineSubscribersCount', false, false, $scope, "", []);
+
+            $scope.SearchPrint = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/FixedLineSubscribersCount', true, false, $scope, "", $('#jqGridFixedLineSubscribersCount').getGridParam("postData"));
+                return;
+            }
+
+            $scope.SearchPrintPdf = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/FixedLineSubscribersCount', false,true, $scope, "", $('#jqGridFixedLineSubscribersCount').getGridParam("postData"));
+                return;
+            }
+
+            if(@IsRtl == true){
+                var model =
+                    [
+                        { label: '@T("Admin.SystemReport.StatisticalReports.FixedLineSubscribersCount.Name")', name: 'Name', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.FixedLineSubscribersCount.Quarter1")', name: 'StrQuarter1', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.FixedLineSubscribersCount.Quarter2")', name: 'StrQuarter2', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.FixedLineSubscribersCount.Quarter3")', name: 'StrQuarter3', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.FixedLineSubscribersCount.Quarter4")', name: 'StrQuarter4', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.FixedLineSubscribersCount.Year")', name: 'Year', align: "center" },
+                    ];
+            }
+            else{
+                var model =
+                    [
+                        { label: '@T("Admin.SystemReport.StatisticalReports.FixedLineSubscribersCount.Year")', name: 'Year', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.FixedLineSubscribersCount.Quarter4")', name: 'StrQuarter4', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.FixedLineSubscribersCount.Quarter3")', name: 'StrQuarter3', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.FixedLineSubscribersCount.Quarter2")', name: 'StrQuarter2', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.FixedLineSubscribersCount.Quarter1")', name: 'StrQuarter1', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.FixedLineSubscribersCount.Name")', name: 'Name', align: "center" },
+                    ];
+            }
+
+            subGridTable = "GridFixedLineSubscribersCount";
+            BuildReportDiv("FixedLineSubscribersCountView", "jqGridFixedLineSubscribersCount", "jqGridFixedLineSubscribersCountPager");
+            buildGrid(model, "jqGridFixedLineSubscribersCount", _urlFixedLineSubscribersCount, '@int.MaxValue', "jqGridFixedLineSubscribersCountPager",
+                false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, null, "FixedLineSubscribersCountSearchButtons**SearchPrint('jqGridFixedLineSubscribersCount', 1)","FixedLineSubscribersCountSearchButtons**SearchPrintPdf('jqGridFixedLineSubscribersCount', 1)")
+        }
+    });
+
+    /************************************************************************* InternetSubscribersCount *************************************************************************/
+
+    var app = SeagullApp.controller('InternetSubscribersCountCtrl', function ($scope, $filter, $http, $timeout, $rootScope) {
+
+        $scope.InternetSubscribersCountPrint = function () {
+            var divToPrint = document.getElementById('InternetSubscribersCountView');
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+            var y = '</scr' + 'ipt>';
+            var onload = ""; //'<script>$(document).ready(function(){window.print()});' + y + '';
+            var scripts = '<link href="@Url.Content("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/styles.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css")" rel="stylesheet" />';
+            //scripts += '<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">' + y + '';
+            var page = scripts + onload + '<html><body style="direction: rtl;" onload="window.print()">' + divToPrint.innerHTML + '</body></html>'
+            newWin.document.write(page);
+            newWin.document.close();
+            settimeout(function () { newwin.close(); }, 10);
+        }
+
+
+        $scope.InternetSubscribersCountSearch = function (canprint, type) {
+
+            var _urlInternetSubscribersCount = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/InternetSubscribersCount', false, false, $scope, "", []);
+
+            $scope.SearchPrint = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/InternetSubscribersCount', true, false, $scope, "", $('#jqGridInternetSubscribersCount').getGridParam("postData"));
+                return;
+            }
+
+            $scope.SearchPrintPdf = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/InternetSubscribersCount', false,true, $scope, "", $('#jqGridInternetSubscribersCount').getGridParam("postData"));
+                return;
+            }
+
+            if(@IsRtl == true){
+                var model =
+                    [
+                        { label: '@T("Admin.SystemReport.StatisticalReports.InternetSubscribersCount.Name")', name: 'Name', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.InternetSubscribersCount.Quarter1")', name: 'StrQuarter1', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.InternetSubscribersCount.Quarter2")', name: 'StrQuarter2', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.InternetSubscribersCount.Quarter3")', name: 'StrQuarter3', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.InternetSubscribersCount.Quarter4")', name: 'StrQuarter4', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.InternetSubscribersCount.Year")', name: 'Year', align: "center" }
+                    ];
+            }
+            else{
+                var model =
+                    [
+                        { label: '@T("Admin.SystemReport.StatisticalReports.InternetSubscribersCount.Year")', name: 'Year', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.InternetSubscribersCount.Quarter4")', name: 'StrQuarter4', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.InternetSubscribersCount.Quarter3")', name: 'StrQuarter3', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.InternetSubscribersCount.Quarter2")', name: 'StrQuarter2', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.InternetSubscribersCount.Quarter1")', name: 'StrQuarter1', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.InternetSubscribersCount.Name")', name: 'Name', align: "center" }
+                    ];
+            }
+
+            subGridTable = "GridInternetSubscribersCount";
+            BuildReportDiv("InternetSubscribersCountView", "jqGridInternetSubscribersCount", "jqGridInternetSubscribersCountPager");
+            buildGrid(model, "jqGridInternetSubscribersCount", _urlInternetSubscribersCount, '@int.MaxValue', "jqGridInternetSubscribersCountPager",
+                false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, null, "InternetSubscribersCountSearchButtons**SearchPrint('jqGridInternetSubscribersCount', 1)","InternetSubscribersCountSearchButtons**SearchPrintPdf('jqGridInternetSubscribersCount', 1)")
+        }
+    });
+
+    /************************************************************************* PrePaidAndPostPaidCountForOperatorsReport *************************************************************************/
+
+    var app = SeagullApp.controller('PrePaidAndPostPaidCountForOperatorsReportCtrl', function ($scope, $filter, $http, $timeout, $rootScope) {
+
+        $scope.PrePaidAndPostPaidCountForOperatorsReportPrint = function () {
+            var divToPrint = document.getElementById('PrePaidAndPostPaidCountForOperatorsReportView');
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+            var y = '</scr' + 'ipt>';
+            var onload = ""; //'<script>$(document).ready(function(){window.print()});' + y + '';
+            var scripts = '<link href="@Url.Content("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/styles.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css")" rel="stylesheet" />';
+            //scripts += '<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">' + y + '';
+            var page = scripts + onload + '<html><body style="direction: rtl;" onload="window.print()">' + divToPrint.innerHTML + '</body></html>'
+            newWin.document.write(page);
+            newWin.document.close();
+            settimeout(function () { newwin.close(); }, 10);
+        }
+
+        $scope.PrePaidAndPostPaidCountForOperatorsReportSearch = function (canprint, type) {
+
+            var _urlPrePaidAndPostPaidCountForOperatorsReport = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/PrePaidAndPostPaidCountForOperatorsReport', false, false, $scope, "", []);
+
+            $scope.SearchPrintPdf = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/PrePaidAndPostPaidCountForOperatorsReport', false, true, $scope, "", $('#jqGridPrePaidAndPostPaidCountForOperatorsReport').getGridParam("postData"));
+                return;
+            }
+
+            $scope.SearchPrint = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/PrePaidAndPostPaidCountForOperatorsReport', true, false, $scope, "", $('#jqGridPrePaidAndPostPaidCountForOperatorsReport').getGridParam("postData"));
+                return;
+            }
+
+            if(@IsRtl == true){
+                var model =
+                    [
+                        { label: 'key', name: 'key', align: "center", key: true, hidden: true },
+                        { label: 'Id', name: 'Id', align: "center", hidden: true },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.PrePaidAndPostPaidCountForOperatorsReport.Operator")', name: 'OperatorName', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.PrePaidAndPostPaidCountForOperatorsReport.Year")', name: 'Year', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.PrePaidAndPostPaidCountForOperatorsReport.PrePaidCount")', name: 'StrPrePaidCount', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.PrePaidAndPostPaidCountForOperatorsReport.PostPaidCount")', name: 'StrPostPaidCount', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.PrePaidAndPostPaidCountForOperatorsReport.TotalCount")', name: 'StrTotalCount', align: "center" }
+                    ];
+            }
+            else{
+                var model =
+                    [
+                        { label: 'key', name: 'key', align: "center", key: true, hidden: true },
+                        { label: 'Id', name: 'Id', align: "center", hidden: true },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.PrePaidAndPostPaidCountForOperatorsReport.TotalCount")', name: 'StrTotalCount', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.PrePaidAndPostPaidCountForOperatorsReport.PostPaidCount")', name: 'StrPostPaidCount', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.PrePaidAndPostPaidCountForOperatorsReport.PrePaidCount")', name: 'StrPrePaidCount', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.PrePaidAndPostPaidCountForOperatorsReport.Year")', name: 'Year', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.PrePaidAndPostPaidCountForOperatorsReport.Operator")', name: 'OperatorName', align: "center" }
+                    ];
+            }
+
+            subGridTable = "GridPrePaidAndPostPaidCountForOperatorsReport";
+            BuildReportDiv("PrePaidAndPostPaidCountForOperatorsReportView", "jqGridPrePaidAndPostPaidCountForOperatorsReport", "jqGridPrePaidAndPostPaidCountForOperatorsReportPager");
+            buildTreeGrid(model, "jqGridPrePaidAndPostPaidCountForOperatorsReport", _urlPrePaidAndPostPaidCountForOperatorsReport, '@int.MaxValue', "jqGridPrePaidAndPostPaidCountForOperatorsReportPager",
+                false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, "PrePaidAndPostPaidCountForOperatorsReportSearchButtons**SearchPrint('jqGridPrePaidAndPostPaidCountForOperatorsReport', 1)","PrePaidAndPostPaidCountForOperatorsReportSearchButtons**SearchPrintPdf('jqGridPrePaidAndPostPaidCountForOperatorsReport', 1)")
+        }
+    });
+
+    /************************************************************************* Market Share *************************************************************************/
+
+    var app = SeagullApp.controller('MarketShareCtrl', function ($scope, $filter, $http, $timeout, $rootScope) {
+
+        $scope.MarketSharePrint = function () {
+            var divToPrint = document.getElementById('MarketShareView');
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+            var y = '</scr' + 'ipt>';
+            var onload = ""; //'<script>$(document).ready(function(){window.print()});' + y + '';
+            var scripts = '<link href="@Url.Content("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/styles.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css")" rel="stylesheet" />';
+            //scripts += '<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">' + y + '';
+            var page = scripts + onload + '<html><body style="direction: rtl;" onload="window.print()">' + divToPrint.innerHTML + '</body></html>'
+            newWin.document.write(page);
+            newWin.document.close();
+            settimeout(function () { newwin.close(); }, 10);
+        }
+
+
+        $scope.MarketShareSearch = function (canprint, type) {
+
+            var _urlMarketShare = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/MarketShare', false, false, $scope, "", []);
+
+            $scope.SearchPrint = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/MarketShare', true, false, $scope, "", $('#jqGridMarketShare').getGridParam("postData"));
+                return;
+            }
+
+            $scope.SearchPrintPdf = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/MarketShare', false, true, $scope, "", $('#jqGridMarketShare').getGridParam("postData"));
+                return;
+            }
+
+            if ($scope.form.Operator.$modelValue == undefined) {
+                $("div.ViewQuestions").html("<h2 style='color:#d82e3deb;font-size: 20px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-right:46%;'>@T("Admin.Seagull.TRC.MarketShare.Operator")<h2>");
+            }
+            else
+            {
+                $("div.ViewQuestions").html("");
+                if(@IsRtl == true){
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MarketShare.IndicatorName")', name: 'IndicatorName', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MarketShare.Value")', name: 'Answer', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MarketShare.OperatorName")', name: 'OperatorName', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MarketShare.Quarter")', name: 'Q', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MarketShare.Year")', name: 'Year', align: "center" }
+                        ];
+                }
+                else{
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MarketShare.Year")', name: 'Year', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MarketShare.Quarter")', name: 'Q', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MarketShare.OperatorName")', name: 'OperatorName', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MarketShare.Value")', name: 'Answer', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MarketShare.IndicatorName")', name: 'IndicatorName', align: "center" }
+                        ];
+                }
+
+                subGridTable = "GridMarketShare";
+                BuildReportDiv("MarketShareView", "jqGridMarketShare", "jqGridMarketSharePager");
+                buildGrid(model, "jqGridMarketShare", _urlMarketShare, '@int.MaxValue', "jqGridMarketSharePager",
+                    false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, null, "MarketShareSearchButtons**SearchPrint('jqGridMarketShare', 1)","MarketShareSearchButtons**SearchPrintPdf('jqGridMarketShare', 1)")
+
+                RemoveLoading();
+            }
+        }
+    });
+
+    /************************************************************************* LicensedCompaniesReport *************************************************************************/
+
+    var app = SeagullApp.controller('LicensedCompaniesReportCtrl', function ($scope, $filter, $http, $timeout, $rootScope) {
+
+        $scope.LicensedCompaniesReportPrint = function () {
+            var divToPrint = document.getElementById('LicensedCompaniesReportView');
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+            var y = '</scr' + 'ipt>';
+            var onload = ""; //'<script>$(document).ready(function(){window.print()});' + y + '';
+            var scripts = '<link href="@Url.Content("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/styles.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css")" rel="stylesheet" />';
+            //scripts += '<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">' + y + '';
+            var page = scripts + onload + '<html><body style="direction: rtl;" onload="window.print()">' + divToPrint.innerHTML + '</body></html>'
+            newWin.document.write(page);
+            newWin.document.close();
+            settimeout(function () { newwin.close(); }, 10);
+        }
+
+        $scope.LicensedCompaniesReportSearch = function (canprint, type) {
+
+            var _urlLicensedCompaniesReport = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/LicensedCompaniesReport', false, false, $scope, "", []);
+
+            $scope.SearchPrintPdf = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/LicensedCompaniesReport', false, true, $scope, "", $('#jqGridLicensedCompaniesReport').getGridParam("postData"));
+                return;
+            }
+
+            $scope.SearchPrint = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/LicensedCompaniesReport', true, false, $scope, "", $('#jqGridLicensedCompaniesReport').getGridParam("postData"));
+                return;
+            }
+
+            if(@IsRtl == true){
+                var model =
+                    [
+                        { label: 'key', name: 'key', align: "center", key: true, hidden: true },
+                        { label: 'Id', name: 'Id', align: "center", hidden: true },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.LicensedCompaniesReport.Name")', name: 'Name', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.LicensedCompaniesReport.ManagerName")', name: 'ManagerName', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.LicensedCompaniesReport.MEmail")', name: 'MEmail', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.LicensedCompaniesReport.LicenseType")', name: 'LicenseTypeStr', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.LicensedCompaniesReport.LicenseDate")', name: 'LicenseDateStr', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.LicensedCompaniesReport.LicenseExpirationDate")', name: 'LicenseExpirationDateStr', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.LicensedCompaniesReport.CompanyType")', name: 'CompanyType', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.LicensedCompaniesReport.Active")', name: 'ActiveStr', align: "center" }
+                    ];
+            }
+            else{
+                var model =
+                    [
+                        { label: 'key', name: 'key', align: "center", key: true, hidden: true },
+                        { label: 'Id', name: 'Id', align: "center", hidden: true },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.LicensedCompaniesReport.Active")', name: 'ActiveStr', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.LicensedCompaniesReport.CompanyType")', name: 'CompanyType', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.LicensedCompaniesReport.LicenseExpirationDate")', name: 'LicenseExpirationDateStr', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.LicensedCompaniesReport.LicenseDate")', name: 'LicenseDateStr', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.LicensedCompaniesReport.LicenseType")', name: 'LicenseTypeStr', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.LicensedCompaniesReport.MEmail")', name: 'MEmail', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.LicensedCompaniesReport.ManagerName")', name: 'ManagerName', align: "center" },
+                        { label: '@T("Admin.SystemReport.StatisticalReports.LicensedCompaniesReport.Name")', name: 'Name', align: "center" }
+                    ];
+            }
+
+            subGridTable = "GridLicensedCompaniesReport";
+            BuildReportDiv("LicensedCompaniesReportView", "jqGridLicensedCompaniesReport", "jqGridLicensedCompaniesReportPager");
+            buildTreeGrid(model, "jqGridLicensedCompaniesReport", _urlLicensedCompaniesReport, '@int.MaxValue', "jqGridLicensedCompaniesReportPager",
+                false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, "LicensedCompaniesReportSearchButtons**SearchPrint('jqGridLicensedCompaniesReport', 1)","LicensedCompaniesReportSearchButtons**SearchPrintPdf('jqGridLicensedCompaniesReport', 1)")
+        }
+    });
+
+    /************************************************************************* Mobile Tariff *************************************************************************/
+
+    var app = SeagullApp.controller('MobileTariffCtrl', function ($scope, $filter, $http, $timeout, $rootScope) {
+
+        var hasOperator = null;
+
+        $scope.MobileTariffPrint = function () {
+            var divToPrint = document.getElementById('MobileTariffView');
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+            var y = '</scr' + 'ipt>';
+            var onload = ""; //'<script>$(document).ready(function(){window.print()});' + y + '';
+            var scripts = '<link href="@Url.Content("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/styles.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css")" rel="stylesheet" />';
+            //scripts += '<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">' + y + '';
+            var page = scripts + onload + '<html><body style="direction: rtl;" onload="window.print()">' + divToPrint.innerHTML + '</body></html>'
+            newWin.document.write(page);
+            newWin.document.close();
+            settimeout(function () { newwin.close(); }, 10);
+        }
+
+        $scope.$watch('model.OperatorId', function (newValue, oldValue) {
+            hasOperator = newValue;
+        });
+
+
+        $scope.MobileTariffSearch = function (canprint, type) {
+
+            var _urlMobileTariff = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/MobileTariff', false, false, $scope, "", []);
+
+            $scope.SearchPrint = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/MobileTariff', true, false, $scope, "", $('#jqGridMobileTariff').getGridParam("postData"));
+                return;
+            }
+
+            $scope.SearchPrintPdf = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/MobileTariff', false, true, $scope, "", $('#jqGridMobileTariff').getGridParam("postData"));
+                return;
+            }
+            if ($scope.form.OperatorId.$viewValue != "" && $scope.form.OperatorId.$viewValue != undefined) {
+                if(@IsRtl == true){
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariff.IndicatorName")', name: 'IndicatorName', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariff.Value")', name: 'Value', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariff.Operator")', name: 'OperatorId', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariff.Year")', name: 'Year', align: "center" }
+                        ];
+                }
+                else{
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariff.Year")', name: 'Year', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariff.Operator")', name: 'OperatorId', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariff.Value")', name: 'Value', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariff.IndicatorName")', name: 'IndicatorName', align: "center" }
+                        ];
+                }
+            }
+            else {
+                if(@IsRtl == true){
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariff.IndicatorName")', name: 'IndicatorName', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariff.Value")', name: 'Value', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariff.Year")', name: 'Year', align: "center" }
+                        ];
+                }
+                else{
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariff.Year")', name: 'Year', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariff.Value")', name: 'Value', align: "center" },
+                            { label: '@T("Admin.SystemReport.StatisticalReports.MobileTariff.IndicatorName")', name: 'IndicatorName', align: "center" }
+                        ];
+                }
+            }
+
+            subGridTable = "GridMobileTariff";
+            BuildReportDiv("MobileTariffView", "jqGridMobileTariff", "jqGridMobileTariffPager");
+            buildGrid(model, "jqGridMobileTariff", _urlMobileTariff, '@int.MaxValue', "jqGridMobileTariffPager",
+            false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, null, "MobileTariffSearchButtons**SearchPrint('jqGridMobileTariff', 1)","MobileTariffSearchButtons**SearchPrintPdf('jqGridMobileTariff', 1)")
+        }
+    });
+
+    /************************************************************************* RevenueReportPopUp *************************************************************************/
+
+    function returnHyperRevenueReportPopUpLink(cellValue, options, rowdata, action) {
+        var input = 'onclick="buildRevenueReportPopUp(\'' + options.rowId + '\',\'' + rowdata.Id + '\',\'' + rowdata.SubObjectiveName + '\')"';
+        return "<a href='javascript:void(0)' " + input + " class='btn bg-blue'>" +
+                "<i class='fa fa-share-alt-square' style='padding-left: 0px !important;'></i> " +
+                 '@T("Admin.GoalDetails")'
+        "</a>";
+    }
+
+    function buildRevenueReportPopUp(Id, SubObjectiveId, SubObjectiveName) {
+        var tittle = SubObjectiveName;
+        var closeTittle = "اغلاق";
+        var data = "<div class='col-xs-12'>" +
+                "<table id='jqGridRevenueReportPopUpReport'></table>" +
+                "<div id='jqGridRevenueReportPopUpPager'></div>" +
+                "</div>";
+        $("#PartialRevenueReportContainer").html("");
+        var table = '<div class="modal-dialog">' +
+                    '<div class="modal-content">' +
+                    '<div class="modal-header">' +
+                    '<button type="button" class="close" data-dismiss="modal" aria-label="Close">' +
+                    '<span aria-hidden="true">&times;</span>' +
+                    '</button>' +
+                    '<h4 class="modal-title">' + tittle + '</h4>' +
+                    '</div>' +
+                    '<div class="modal-body">' + data + '</div>' +
+                    '<div class="modal-footer">' +
+                    '<button type="button" class="btn bg-orange" data-dismiss="modal">' + closeTittle + '</button>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
+        $("#PartialRevenueReportContainer").html(table);
+        $("#PartialRevenueReportContainer").modal('show');
+        $("#PartialRevenueReportContainer").show();
+        var _urlRevenueReportPopUp = '/Admin/SystemReport/RevenueReportPopUp';            //+ "?SubObjectiveId=" + SubObjectiveId + "&IsCumulative=" + IsCumulativeVal;
+        var model = [
+               @*{ label: '@T("Admin.RevenueReportPopUp.TaskName")', name: 'TaskName', align: "center" },
+                   { label: '@T("Admin.DirectorateProgressReport.Q1Progress")', name: 'Q1Progress', align: "center" },
+               { label: '@T("Admin.DirectorateProgressReport.Q2Progress")', name: 'Q2Progress', align: "center" },
+               { label: '@T("Admin.DirectorateProgressReport.Q3Progress")', name: 'Q3Progress', align: "center" },
+               { label: '@T("Admin.DirectorateProgressReport.Q4Progress")', name: 'Q4Progress', align: "center" },*@
+               @*{ label: '@T("Admin.DirectorateProgressReport.CumulativeProgress")', name: 'CumulativeProgress', align: "center" },*@
+
+        ];
+
+        buildGrid(model, "jqGridRevenueReportPopUpReport", _urlRevenueReportPopUp, '@int.MaxValue', "jqGridRevenueReportPopUpPager",
+                   false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 2, undefined, "jqGridRevenueReportPopUpReport**PrintJqGrid")
+
+    }
+
+    /************************************************************************* End RevenueReportPopUp *************************************************************************/
+
+    /************************************************************************* Follow-up Survey Report *************************************************************************/
+
+    var app = SeagullApp.controller('FollowupSurveyReportCtrl', function ($scope, $filter, $http, $timeout, $rootScope) {
+
+        $scope.FollowupSurveyReportPrint = function () {
+            var divToPrint = document.getElementById('FollowupSurveyReportView');
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+            var y = '</scr' + 'ipt>';
+            var onload = ""; //'<script>$(document).ready(function(){window.print()});' + y + '';
+            var scripts = '<link href="@Url.Content("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/styles.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css")" rel="stylesheet" />';
+            //scripts += '<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">' + y + '';
+            var page = scripts + onload + '<html><body style="direction: rtl;" onload="window.print()">' + divToPrint.innerHTML + '</body></html>'
+            newWin.document.write(page);
+            newWin.document.close();
+            settimeout(function () { newwin.close(); }, 10);
+        }
+
+        $scope.showDeleteQuarter = function (reportPeriod) {
+            if (reportPeriod == 1) {
+                $scope.atribut = "GenericGets/GetAllQReportYears"
+                return true;
+            }
+            else if (reportPeriod == 2) {
+                $scope.atribut = "GenericGets/GetAllAnnualQReportYears"
+                return false;
+            }
+            else {
+                $scope.atribut = "GenericGets/GetAllFinancialReportYears"
+                return false;
+            }
+        }
+        $scope.showDeleteYear = function (reportPeriod) {
+            if (reportPeriod == 1 || reportPeriod == 2 || reportPeriod == 3) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+        $scope.FollowupSurveyReportSearch = function (canprint, type) {
+            var _urlFollowupSurveyReport = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/FollowupSurveyReport', false, false, $scope, "", []);
+
+            $scope.SearchPrint = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/FollowupSurveyReport', true, false, $scope, "", $('#jqGridFollowupSurveyReport').getGridParam("postData"));
+                return;
+            }
+
+            $scope.SearchPrintPdf = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/FollowupSurveyReport', false, true, $scope, "", $('#jqGridFollowupSurveyReport').getGridParam("postData"));
+                return;
+            }
+
+            if ($scope.form.ReportPeriod.$viewValue == 1) {
+                $("div.ReportPeriod").html("");
+                if(@IsRtl == true){
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Operator")', name: 'Operator', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.ReportPeriod")', name: 'ReportPeriod', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Year")', name: 'Year', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Quarter")', name: 'Quarter', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Submited")', name: 'Status', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.SubmitedDate")', name: 'SubmitedDate', align: "center" }
+                        ];
+                }
+                else{
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.SubmitedDate")', name: 'SubmitedDate', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Submited")', name: 'Status', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Quarter")', name: 'Quarter', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Year")', name: 'Year', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.ReportPeriod")', name: 'ReportPeriod', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Operator")', name: 'Operator', align: "center" }
+                        ];
+                }
+                subGridTable = "GridFollowupSurveyReport";
+                BuildReportDiv("FollowupSurveyReportView", "jqGridFollowupSurveyReport", "jqGridFollowupSurveyReportPager");
+                buildGrid(model, "jqGridFollowupSurveyReport", _urlFollowupSurveyReport, '@int.MaxValue', "jqGridFollowupSurveyReportPager",
+                false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, null, "FollowupSurveyReportSearchButtons**SearchPrint('jqGridFollowupSurveyReport', 1)","FollowupSurveyReportSearchButtons**SearchPrintPdf('jqGridFollowupSurveyReport', 1)")
+            }
+            else if ($scope.form.ReportPeriod.$viewValue == 2) {
+                $("div.ReportPeriod").html("");
+                if(@IsRtl == true){
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Operator")', name: 'Operator', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.ReportPeriod")', name: 'ReportPeriod', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Year")', name: 'Year', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Submited")', name: 'Status', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.SubmitedDate")', name: 'SubmitedDate', align: "center" }
+                        ];
+                }
+                else{
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.SubmitedDate")', name: 'SubmitedDate', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Submited")', name: 'Status', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Year")', name: 'Year', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.ReportPeriod")', name: 'ReportPeriod', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Operator")', name: 'Operator', align: "center" },
+                        ];
+                }
+                subGridTable = "GridFollowupSurveyReport";
+                BuildReportDiv("FollowupSurveyReportView", "jqGridFollowupSurveyReport", "jqGridFollowupSurveyReportPager");
+                buildGrid(model, "jqGridFollowupSurveyReport", _urlFollowupSurveyReport, '@int.MaxValue', "jqGridFollowupSurveyReportPager",
+                false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, null, "FollowupSurveyReportSearchButtons**SearchPrint('jqGridFollowupSurveyReport', 1)","FollowupSurveyReportSearchButtons**SearchPrintPdf('jqGridFollowupSurveyReport', 1)")
+
+            }
+            else if ($scope.form.ReportPeriod.$viewValue == 3) {
+                $("div.ReportPeriod").html("");
+                if(@IsRtl == true){
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Operator")', name: 'Operator', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.ReportPeriod")', name: 'ReportPeriod', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Year")', name: 'Year', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Submited")', name: 'Status', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.SubmitedDate")', name: 'SubmitedDate', align: "center" }
+                        ];
+                }
+                else{
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.SubmitedDate")', name: 'SubmitedDate', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Submited")', name: 'Status', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Year")', name: 'Year', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.ReportPeriod")', name: 'ReportPeriod', align: "center" },
+                            { label: '@T("Admin.SystemReport.FollowupReports.FollowupSurveyReport.Operator")', name: 'Operator', align: "center" }
+                        ];
+                }
+                subGridTable = "GridFollowupSurveyReport";
+                BuildReportDiv("FollowupSurveyReportView", "jqGridFollowupSurveyReport", "jqGridFollowupSurveyReportPager");
+                buildGrid(model, "jqGridFollowupSurveyReport", _urlFollowupSurveyReport, '@int.MaxValue', "jqGridFollowupSurveyReportPager",
+                false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, null, "FollowupSurveyReportSearchButtons**SearchPrint('jqGridFollowupSurveyReport', 1)","FollowupSurveyReportSearchButtons**SearchPrintPdf('jqGridFollowupSurveyReport', 1)")
+
+            }
+            else {
+                $("div.ReportPeriod").html("<h2 style='color:#d82e3deb;font-size: 20px;font-family: fantasy;text-align: -webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;display: inline-block;'>@T("Admin.Seagull.TRC.FixedTariffReport.MsgReportPeriod")<h2>");
+            }
+        }
+    });
+
+    /************************************************************************* Quarterly Performance Indicators *************************************************************************/
+
+    var app = SeagullApp.controller('QuarterlyPerformanceIndicatorsCtrl', function ($scope, $filter, $http, $timeout, $rootScope) {
+
+        $scope.QuarterlyPerformanceIndicatorsPrint = function () {
+            var divToPrint = document.getElementById('QuarterlyPerformanceIndicatorsView');
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+            var y = '</scr' + 'ipt>';
+            var onload = ""; //'<script>$(document).ready(function(){window.print()});' + y + '';
+            var scripts = '<link href="@Url.Content("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/styles.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css")" rel="stylesheet" />';
+            //scripts += '<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">' + y + '';
+            var page = scripts + onload + '<html><body style="direction: rtl;" onload="window.print()">' + divToPrint.innerHTML + '</body></html>'
+            newWin.document.write(page);
+            newWin.document.close();
+            settimeout(function () { newwin.close(); }, 10);
+        }
+
+        $scope.QuarterlyPerformanceIndicatorsSearch = function (canprint, type) {
+
+            var _urlQuarterlyPerformanceIndicators = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/QuarterlyPerformanceIndicators', false, false, $scope, "", []);
+
+            $scope.SearchPrint = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/QuarterlyPerformanceIndicators', true, false, $scope, "", $('#jqGridQuarterlyPerformanceIndicators').getGridParam("postData"));
+                return;
+            }
+
+            $scope.SearchPrintPdf = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/QuarterlyPerformanceIndicators', false, true, $scope, "", $('#jqGridQuarterlyPerformanceIndicators').getGridParam("postData"));
+                return;
+            }
+
+            if ($scope.model.OpratorIds == "" || $scope.model.OpratorIds == undefined) {
+                if(@IsRtl == true){
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.IndicatorName")', name: 'IndicatorName', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.Value")', name: 'Answer', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.Quarter")', name: 'Q', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.Year")', name: 'Year', align: "center" }
+                        ];
+                }
+                else{
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.Year")', name: 'Year', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.Quarter")', name: 'Q', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.Value")', name: 'Answer', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.IndicatorName")', name: 'IndicatorName', align: "center" }
+                        ];
+                }
+            }
+            else {
+                if(@IsRtl == true){
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.IndicatorName")', name: 'IndicatorName', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.Value")', name: 'Answer', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.OpratorName")', name: 'OperatorName', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.Quarter")', name: 'Q', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.Year")', name: 'Year', align: "center" }
+                        ];
+                }
+                else{
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.Year")', name: 'Year', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.Quarter")', name: 'Q', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.OpratorName")', name: 'OperatorName', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.Value")', name: 'Answer', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.IndicatorName")', name: 'IndicatorName', align: "center" }
+                        ];
+                }
+            }
+
+            subGridTable = "GridQuarterlyPerformanceIndicators";
+            BuildReportDiv("QuarterlyPerformanceIndicatorsView", "jqGridQuarterlyPerformanceIndicators", "jqGridQuarterlyPerformanceIndicatorsPager");
+            buildGrid(model, "jqGridQuarterlyPerformanceIndicators", _urlQuarterlyPerformanceIndicators, '@int.MaxValue', "jqGridQuarterlyPerformanceIndicatorsPager",
+                false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, null, "QuarterlyPerformanceIndicatorsSearchButtons**SearchPrint('jqGridQuarterlyPerformanceIndicators', 1)","QuarterlyPerformanceIndicatorsSearchButtons**SearchPrintPdf('jqGridQuarterlyPerformanceIndicators', 1)")
+        }
+    });
+
+    /************************************************************************* Annual Performance Indicators *************************************************************************/
+
+    var app = SeagullApp.controller('AnnualPerformanceIndicatorsCtrl', function ($scope, $filter, $http, $timeout, $rootScope) {
+
+        $scope.AnnualPerformanceIndicatorsPrint = function () {
+            var divToPrint = document.getElementById('AnnualPerformanceIndicatorsView');
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+            var y = '</scr' + 'ipt>';
+            var onload = ""; //'<script>$(document).ready(function(){window.print()});' + y + '';
+            var scripts = '<link href="@Url.Content("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/styles.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css")" rel="stylesheet" />';
+            //scripts += '<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">' + y + '';
+            var page = scripts + onload + '<html><body style="direction: rtl;" onload="window.print()">' + divToPrint.innerHTML + '</body></html>'
+            newWin.document.write(page);
+            newWin.document.close();
+            settimeout(function () { newwin.close(); }, 10);
+        }
+
+        $scope.AnnualPerformanceIndicatorsSearch = function (canprint, type) {
+
+            var _urlAnnualPerformanceIndicators = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/AnnualPerformanceIndicators', false, false, $scope, "", []);
+
+            $scope.SearchPrint = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/AnnualPerformanceIndicators', true, false, $scope, "", $('#jqGridAnnualPerformanceIndicators').getGridParam("postData"));
+                return;
+            }
+
+            $scope.SearchPrintPdf = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/AnnualPerformanceIndicators', false, true, $scope, "", $('#jqGridAnnualPerformanceIndicators').getGridParam("postData"));
+                return;
+            }
+
+            if ($scope.model.OpratorIds == "" || $scope.model.OpratorIds == undefined) {
+                if(@IsRtl == true){
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.IndicatorName")', name: 'IndicatorName', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.Value")', name: 'Value', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.Year")', name: 'Year', align: "center" }
+                        ];
+                }
+                else{
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.Year")', name: 'Year', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.Value")', name: 'Value', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.IndicatorName")', name: 'IndicatorName', align: "center" }
+                        ];
+                }
+            }
+            else {
+                if(@IsRtl == true){
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.IndicatorName")', name: 'IndicatorName', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.Value")', name: 'Value', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.OpratorName")', name: 'OperatorName', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.Year")', name: 'Year', align: "center" },
+                        ];
+                }
+                else{
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.Year")', name: 'Year', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.OpratorName")', name: 'OperatorName', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.Value")', name: 'Value', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.IndicatorName")', name: 'IndicatorName', align: "center" }
+                        ];
+                }
+            }
+            subGridTable = "GridAnnualPerformanceIndicators";
+            BuildReportDiv("AnnualPerformanceIndicatorsView", "jqGridAnnualPerformanceIndicators", "jqGridAnnualPerformanceIndicatorsPager");
+            buildGrid(model, "jqGridAnnualPerformanceIndicators", _urlAnnualPerformanceIndicators, '@int.MaxValue', "jqGridAnnualPerformanceIndicatorsPager",
+            false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, null, "AnnualPerformanceIndicatorsSearchButtons**SearchPrint('jqGridAnnualPerformanceIndicators', 1)","AnnualPerformanceIndicatorsSearchButtons**SearchPrintPdf('jqGridAnnualPerformanceIndicators', 1)")
+        }
+    });
+
+    /************************************************************************* Financial Performance Indicators *************************************************************************/
+
+    var app = SeagullApp.controller('FinancialPerformanceIndicatorsCtrl', function ($scope, $filter, $http, $timeout, $rootScope) {
+
+        $scope.FinancialPerformanceIndicatorsPrint = function () {
+            var divToPrint = document.getElementById('FinancialPerformanceIndicatorsView');
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+            var y = '</scr' + 'ipt>';
+            var onload = ""; //'<script>$(document).ready(function(){window.print()});' + y + '';
+            var scripts = '<link href="@Url.Content("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/styles.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css")" rel="stylesheet" />';
+            //scripts += '<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">' + y + '';
+            var page = scripts + onload + '<html><body style="direction: rtl;" onload="window.print()">' + divToPrint.innerHTML + '</body></html>'
+            newWin.document.write(page);
+            newWin.document.close();
+            settimeout(function () { newwin.close(); }, 10);
+        }
+
+        $scope.FinancialPerformanceIndicatorsSearch = function (canprint, type) {
+
+            var _urlFinancialPerformanceIndicators = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/FinancialPerformanceIndicators', false, false, $scope, "", []);
+
+            $scope.SearchPrint = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/FinancialPerformanceIndicators', true, false, $scope, "", $('#jqGridFinancialPerformanceIndicators').getGridParam("postData"));
+                return;
+            }
+
+            $scope.SearchPrintPdf = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/FinancialPerformanceIndicators', false, true, $scope, "", $('#jqGridFinancialPerformanceIndicators').getGridParam("postData"));
+                return;
+            }
+
+            if ($scope.model.OpratorIds == "" || $scope.model.OpratorIds == undefined) {
+                if(@IsRtl == true){
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.IndicatorName")', name: 'IndicatorName', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.Value")', name: 'Value', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.Year")', name: 'Year', align: "center" }
+                        ];
+                }
+                else{
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.Year")', name: 'Year', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.Value")', name: 'Value', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.IndicatorName")', name: 'IndicatorName', align: "center" }
+                        ];
+                }
+            }
+            else {
+                if(@IsRtl == true){
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.IndicatorName")', name: 'IndicatorName', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.Value")', name: 'Value', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.OpratorName")', name: 'OperatorName', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.Year")', name: 'Year', align: "center" },
+                        ];
+                }
+                else{
+                    var model =
+                        [
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.Year")', name: 'Year', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.OpratorName")', name: 'OperatorName', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.Value")', name: 'Value', align: "center" },
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.IndicatorName")', name: 'IndicatorName', align: "center" }
+                        ];
+                }
+            }
+            subGridTable = "GridFinancialPerformanceIndicators";
+            BuildReportDiv("FinancialPerformanceIndicatorsView", "jqGridFinancialPerformanceIndicators", "jqGridFinancialPerformanceIndicatorsPager");
+            buildGrid(model, "jqGridFinancialPerformanceIndicators", _urlFinancialPerformanceIndicators, '@int.MaxValue', "jqGridFinancialPerformanceIndicatorsPager",
+            false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, null, "FinancialPerformanceIndicatorsSearchButtons**SearchPrint('jqGridFinancialPerformanceIndicators', 1)","FinancialPerformanceIndicatorsSearchButtons**SearchPrintPdf('jqGridFinancialPerformanceIndicators', 1)")
+        }
+    });
+
+    /************************************************************************* MailComprehensiveReport *************************************************************************/
+
+    var app = SeagullApp.controller('MailComprehensiveReportCtrl', function ($scope, $filter, $http, $timeout, $rootScope) {
+
+        $scope.MailComprehensiveReportPrint = function () {
+            var divToPrint = document.getElementById('MailComprehensiveReportView');
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+            var y = '</scr' + 'ipt>';
+            var onload = ""; //'<script>$(document).ready(function(){window.print()});' + y + '';
+            var scripts = '<link href="@Url.Content("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/styles.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css")" rel="stylesheet" />';
+            //scripts += '<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">' + y + '';
+            var page = scripts + onload + '<html><body style="direction: rtl;" onload="window.print()">' + divToPrint.innerHTML + '</body></html>'
+            newWin.document.write(page);
+            newWin.document.close();
+            settimeout(function () { newwin.close(); }, 10);
+        }
+
+        $scope.MailComprehensiveReportSearch = function (canprint, type) {
+
+            var _urlMailComprehensiveReport = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/MailComprehensiveReport', false, false, $scope, "", []);
+
+            $scope.SearchPrint = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/MailComprehensiveReport', true, false, $scope, "", $('#jqGridMailComprehensiveReport').getGridParam("postData"));
+                return;
+            }
+            $scope.SearchPrintPdf = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/MailComprehensiveReport', false,true, $scope, "", $('#jqGridMailComprehensiveReport').getGridParam("postData"));
+                return;
+            }
+
+            if(@IsRtl == true){
+                var model =
+                    [
+                        { label: '@T("Admin.SystemReport.MailReports.MailComprehensiveReport.MailOperatorName")', name: 'MailOperatorName', align: "center" },
+                        { label: '@T("Admin.SystemReport.MailReports.MailComprehensiveReport.Year")', name: 'YearStr', align: "center" },
+                        { label: '@T("Admin.SystemReport.MailReports.MailComprehensiveReport.MailQTitle")', name: 'MailQTitle', align: "center" },
+                        { label: '@T("Admin.SystemReport.MailReports.MailComprehensiveReport.MailQuestion")', name: 'MailQuestion', align: "center" },
+                        { label: '@T("Admin.SystemReport.MailReports.MailComprehensiveReport.Answer")', name: 'Answer', align: "center" },
+                        { label: '@T("Admin.SystemReport.MailReports.MailComprehensiveReport.SecondAnswer")', name: 'SecondAnswer', align: "center" }
+                    ];
+            }
+            else{
+                var model =
+                    [
+                        { label: '@T("Admin.SystemReport.MailReports.MailComprehensiveReport.SecondAnswer")', name: 'SecondAnswer', align: "center" },
+                        { label: '@T("Admin.SystemReport.MailReports.MailComprehensiveReport.Answer")', name: 'Answer', align: "center" },
+                        { label: '@T("Admin.SystemReport.MailReports.MailComprehensiveReport.MailQuestion")', name: 'MailQuestion', align: "center" },
+                        { label: '@T("Admin.SystemReport.MailReports.MailComprehensiveReport.MailQTitle")', name: 'MailQTitle', align: "center" },
+                        { label: '@T("Admin.SystemReport.MailReports.MailComprehensiveReport.Year")', name: 'YearStr', align: "center" },
+                        { label: '@T("Admin.SystemReport.MailReports.MailComprehensiveReport.MailOperatorName")', name: 'MailOperatorName', align: "center" }
+                    ];
+            }
+
+            subGridTable = "GridMailComprehensiveReport";
+            BuildReportDiv("MailComprehensiveReportView", "jqGridMailComprehensiveReport", "jqGridMailComprehensiveReportPager");
+            buildGrid(model, "jqGridMailComprehensiveReport", _urlMailComprehensiveReport, '@int.MaxValue', "jqGridMailComprehensiveReportPager",
+            false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, null, "MailComprehensiveReportSearchButtons**SearchPrint('jqGridMailComprehensiveReport', 1)","MailComprehensiveReportSearchButtons**SearchPrintPdf('jqGridMailComprehensiveReport', 1)")
+        }
+    });
+
+    /************************************************************************* AverageIndicatorsForMailsReport *************************************************************************/
+
+    var app = SeagullApp.controller('AverageIndicatorsForMailsReportCtrl', function ($scope, $filter, $http, $timeout, $rootScope) {
+
+        $scope.AverageIndicatorsForMailsReportPrint = function () {
+            var divToPrint = document.getElementById('AverageIndicatorsForMailsReportView');
+
+            var newWin = window.open('', 'Print-Window');
+
+            newWin.document.open();
+            var y = '</scr' + 'ipt>';
+            var onload = ""; //'<script>$(document).ready(function(){window.print()});' + y + '';
+            var scripts = '<link href="@Url.Content("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/styles.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css")" rel="stylesheet" />';
+            scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css")" rel="stylesheet" />';
+            //scripts += '<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">' + y + '';
+            var page = scripts + onload + '<html><body style="direction: rtl;" onload="window.print()">' + divToPrint.innerHTML + '</body></html>'
+            newWin.document.write(page);
+            newWin.document.close();
+            settimeout(function () { newwin.close(); }, 10);
+        }
+
+        $scope.AverageIndicatorsForMailsReportSearch = function (canprint, type) {
+
+            var _urlAverageIndicatorsForMailsReport = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/AverageIndicatorsForMailsReport', false, false, $scope, "", []);
+
+            $scope.SearchPrint = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/AverageIndicatorsForMailsReport', true, false, $scope, "", $('#jqGridAverageIndicatorsForMailsReport').getGridParam("postData"));
+                return;
+            }
+            $scope.SearchPrintPdf = function (tableName, type) {
+                window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/SystemReport/AverageIndicatorsForMailsReport', false,true, $scope, "", $('#jqGridAverageIndicatorsForMailsReport').getGridParam("postData"));
+                return;
+            }
+
+            if(@IsRtl == true){
+                var model =
+                    [
+                        { label: '@T("Admin.SystemReport.MailReports.AverageIndicatorsForMailsReport.YearStr")', name: 'YearStr', align: "center" },
+                        { label: '@T("Admin.SystemReport.MailReports.AverageIndicatorsForMailsReport.IndicatorNameEn")', name: 'IndicatorNameEn', align: "center" },
+                        { label: '@T("Admin.SystemReport.MailReports.AverageIndicatorsForMailsReport.FirstAvgStr")', name: 'FirstAvgStr', align: "center" },
+                        { label: '@T("Admin.SystemReport.MailReports.AverageIndicatorsForMailsReport.SecondAvgStr")', name: 'SecondAvgStr', align: "center" },
+                    ];
+            }
+            else{
+                var model =
+                    [
+                        { label: '@T("Admin.SystemReport.MailReports.AverageIndicatorsForMailsReport.SecondAvgStr")', name: 'SecondAvgStr', align: "center" },
+                        { label: '@T("Admin.SystemReport.MailReports.AverageIndicatorsForMailsReport.FirstAvgStr")', name: 'FirstAvgStr', align: "center" },
+                        { label: '@T("Admin.SystemReport.MailReports.AverageIndicatorsForMailsReport.IndicatorNameEn")', name: 'IndicatorNameEn', align: "center" },
+                        { label: '@T("Admin.SystemReport.MailReports.AverageIndicatorsForMailsReport.YearStr")', name: 'YearStr', align: "center" },
+                    ];
+            }
+
+            subGridTable = "GridAverageIndicatorsForMailsReport";
+            BuildReportDiv("AverageIndicatorsForMailsReportView", "jqGridAverageIndicatorsForMailsReport", "jqGridAverageIndicatorsForMailsReportPager");
+            buildGrid(model, "jqGridAverageIndicatorsForMailsReport", _urlAverageIndicatorsForMailsReport, '@int.MaxValue', "jqGridAverageIndicatorsForMailsReportPager",
+            false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, null, "AverageIndicatorsForMailsReportSearchButtons**SearchPrint('jqGridAverageIndicatorsForMailsReport', 1)","AverageIndicatorsForMailsReportSearchButtons**SearchPrintPdf('jqGridAverageIndicatorsForMailsReport', 1)")
+        }
+    });
+
+</script>

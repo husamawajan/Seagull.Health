@@ -1,0 +1,28 @@
+﻿.statistic-box.red {
+    background-color: #fa424a;
+    background-image: url(images/statistic-box-red.png);
+}
+
+.statistic-box.purple {
+    background-color: #ac6bec;
+    background-image: url(images/statistic-box-purple.png);
+}
+
+.statistic-box.yellow {
+    background-color: #fdad2a;
+    background-image: url(images/Ministry.jpg);
+}
+
+.statistic-box.green {
+    background-color: #46c35f;
+    background-image: url(images/statistic-box-green.png);
+}
+
+.statistic-box > div {
+    -webkit-border-radius: inherit;
+    border-radius: inherit;
+    height: 142px;
+    background: url(images/statistic-box-grid.png) 50% 0;
+    background-size: 21px 20px;
+    position: relative;
+}

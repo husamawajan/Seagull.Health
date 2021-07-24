@@ -1,0 +1,492 @@
+﻿@using System.Globalization
+@using Seagull.Core.Domain.Users
+@using Seagull.Web.Framework.UI;
+@using Seagull.Core;
+@using Seagull.Core.Domain
+@using Seagull.Core.Domain.Common;
+@using Seagull.Core.Domain.Localization
+@using Seagull.Services.Common
+@using Seagull.Services.Users
+@using Seagull.Services.Security;
+<link href="" rel="stylesheet" />
+
+@{
+    #region Scripts and Css
+    var kendoVersion = "2014.1.318";
+    var supportRtl = EngineContext.Current.Resolve<IWorkContext>().WorkingLanguage.Rtl &&
+        !EngineContext.Current.Resolve<LocalizationSettings>().IgnoreRtlPropertyForAdminArea;
+    bool isMailOperator = EngineContext.Current.Resolve<IWorkContext>().CurrentUser.UserRoles.Where(a => a.Name.Contains("Postal Operator")).Count() > 0;
+    bool isMailAdmin = EngineContext.Current.Resolve<IWorkContext>().CurrentUser.UserRoles.Where(a => a.Name.Contains("Post department official")).Count() > 0;
+    //Scroll Box Header
+    Html.AppendCssFileParts("~/Administration/Content/ScrollBoxHeader/ScrollBox.css");
+    //CSS resources
+    if (supportRtl)
+    {
+
+        Html.AppendCssFileParts("~/Administration/Content/styles.rtl.css");
+        Html.AppendCssFileParts("~/Administration/Content/seagull-core.rtl.css");
+        Html.AppendCssFileParts("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css");
+        Html.AppendCssFileParts("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css");
+        Html.AppendCssFileParts("~/Administration/content/mdi/css/materialdesignicons.min.rtl.css");
+        Html.AppendCssFileParts("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css");
+        Html.AppendCssFileParts(string.Format("~/Administration/Content/kendo/{0}/kendo.default.min.rtl.css", kendoVersion));
+        Html.AppendCssFileParts(string.Format("~/Administration/Content/kendo/{0}/kendo.common.min.rtl.css", kendoVersion));
+    }
+    else
+    {
+        Html.AppendCssFileParts("~/Administration/Content/styles.css");
+        Html.AppendCssFileParts("~/Administration/Content/seagull-core.css");
+        Html.AppendCssFileParts("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.css");
+        Html.AppendCssFileParts("~/Administration/Content/adminLTE/skins/_all-skins.min.css");
+        Html.AppendCssFileParts("~/Administration/content/mdi/css/materialdesignicons.min.css");
+        Html.AppendCssFileParts("~/Administration/Content/bootstrap/css/bootstrap.min.css");
+        Html.AppendCssFileParts(string.Format("~/Administration/Content/kendo/{0}/kendo.common.min.css", kendoVersion));
+        Html.AppendCssFileParts(string.Format("~/Administration/Content/kendo/{0}/kendo.default.min.css", kendoVersion));
+    }
+    Html.AppendCssFileParts("~/Administration/Content/fontAwesome/css/font-awesome-4.6.3.min.css");
+    Html.AppendCssFileParts("~/Administration/Content/jquery-ui-themes/smoothness/jquery-ui-1.10.3.custom.min.css");
+    Html.AppendCssFileParts("~/Administration/Scripts/FileUpload/css/jquery.fileupload.css");
+    Html.AppendCssFileParts("~/Administration/Content/typeahead/typeahead.css");
+    Html.AppendCssFileParts("~/Administration/Content/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css");
+    Html.AppendScriptParts("~/Administration/Scripts/jquery-1.10.2.min.js");
+    Html.AppendScriptParts(string.Format("~/Administration/Scripts/kendo/{0}/kendo.web.min.js", kendoVersion));
+    Html.AppendScriptParts("~/Administration/Scripts/admin.search.js");
+    Html.AppendScriptParts("~/Administration/scripts/admin.navigation.js");
+    Html.AppendScriptParts("~/Administration/Scripts/admin.common.js");
+    Html.AppendScriptParts("~/Administration/scripts/typeahead/typeahead.bundle.min.js");
+    Html.AppendScriptParts("~/Administration/Scripts/jquery-migrate-1.2.1.min.js");
+    Html.AppendScriptParts("~/Administration/Scripts/jquery-ui-1.10.3.custom.min.js");
+    Html.AppendScriptParts("~/Administration/Scripts/jquery.validate.unobtrusive.min.js");
+    Html.AppendScriptParts("~/Administration/Scripts/jquery.validate.min.js");
+    Html.AppendScriptParts("~/Administration/Scripts/adminLTE/app.min.js");
+    Html.AppendScriptParts("~/Administration/Scripts/bootstrap/bootstrap.min.js");
+    Html.AppendScriptParts("~/Administration/Scripts/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js");
+    Html.AppendScriptParts("~/Administration/Scripts/jquery-1.10.2.min.js");
+    Html.AppendScriptParts("~/Administration/Scripts/moment/moment.js");
+    //page title
+    string adminPageTitle = !String.IsNullOrWhiteSpace(ViewBag.Title) ? ViewBag.Title + " / " : "";
+    adminPageTitle += T("Admin.PageTitle").Text;
+
+    //has "Manage Maintenance"
+    var canManageMaintenance = EngineContext.Current.Resolve<IPermissionService>()
+        .Authorize(StandardPermissionProvider.ManageMaintenance);
+
+    //X-UA-Compatible tag
+    var commonSettings = EngineContext.Current.Resolve<CommonSettings>();
+    if (commonSettings.RenderXuaCompatible)
+    {
+        Html.AppendHeadCustomParts(string.Format("<meta http-equiv=\"X-UA-Compatible\" content=\"{0}\"/>", commonSettings.XuaCompatibleValue));
+    }
+
+    //sidebar
+    const string hideSidebarAttributeName = "HideSidebar";
+    var hideSidebar = EngineContext.Current.Resolve<IWorkContext>().CurrentUser.GetAttribute<bool>(hideSidebarAttributeName);
+
+    //avatar
+    var currentUser = EngineContext.Current.Resolve<IWorkContext>().CurrentUser;
+    #endregion
+    //info: we specify "Admin" area for actions and widgets here for cases when we use this layout in a plugin that is running in a different area than "admin"
+}
+<!DOCTYPE html>
+<html@(supportRtl ? Html.Raw(" dir=\"rtl\"") : null)>
+    <head>
+        <title>@adminPageTitle</title>
+        <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+        @Html.SeagullHeadCustom()
+        @Html.SeagullCssFiles(this.Url, ResourceLocation.Head, false)
+        <script src="@Url.Content("~/Administration/Scripts/AngularHelpers/Notification.js")"></script>
+        @Html.SeagullScripts(this.Url, ResourceLocation.Head, false)
+        <script src="@Url.Content("~/Administration/Scripts/angular/libs/angular.min.js")"></script>
+        <script src="@Url.Content("~/Administration/Scripts/angular/libs/angular-route.min.js")"></script>
+        <script src="@Url.Content("~/Administration/Scripts/angular/libs/angular-translate.min.js")"></script>
+        @if (supportRtl)
+        {
+            <script src="@Url.Content("~/Administration/Scripts/angular/translations/ar.js")"></script>
+        }
+        else
+        {
+            <script src="@Url.Content("~/Administration/Scripts/angular/translations/en.js")"></script>
+        }
+        <script src="@Url.Content("~/Administration/Scripts/angular/libs/angular-sanitize.min.js")"></script>
+        <script src="@Url.Content("~/Administration/Scripts/angular/ui-bootstrap-tpls-2.5.0.min.js")"></script>
+        <script src=@Url.Content("~/Administration/Scripts/angular/seagull-core.js")></script>
+        <script src=@Url.Content("~/Administration/Scripts/angular/seagull-app.js")></script>
+        <script src="@Url.Content("~/Administration/scripts/floatthead.js")"></script>
+        <script src="@Url.Content("~/Administration/Content/bootstrap-select/bootstrap-select.js")"></script>
+        @*Weather Plugin*@
+        <script src="@Url.Content("~/Administration/Scripts/Weather/SimpleWeather.js")"></script>
+        <link href="@Url.Content("~/Administration/Content/Weather/Weather.css")" rel="stylesheet" />
+        @*Select2 Plugin*@
+        <link href="@Url.Content("~/Administration/Content/Select2/css/select2.css")" rel="stylesheet" />
+        <script src="@Url.Content("~/Administration/Content/Select2/Scripts/select2.js")"></script>
+        <script src="@Url.Content("~/Administration/Content/Select2/Scripts/select2.min.js")"></script>
+        <script src="@Url.Content("~/Administration/Content/Select2/Scripts/select2Extension.js")"></script>
+        @* Circle Progress *@
+        <link href="@Url.Content("~/Administration/Content/DashboardChart/CircleProgress/CircleMeterChart.css")" rel="stylesheet" />
+        <script src="@Url.Content("~/Administration/Content/DashboardChart/CircleProgress/Circle-Progress.js")"></script>
+
+        <!-- The Templates plugin is included to render the upload/download listings -->
+        <script src="@Url.Content("~/Administration/Scripts/FileUpload/js/tmpl.min.js")"></script>
+        @*The Load Image plugin is included for the preview images and image resizing functionality*@
+        <script src="@Url.Content("~/Administration/Scripts/FileUpload/js/load-image.all.min.js")"></script>
+        @*//The Canvas to Blob plugin is included for image resizing functionality*@
+        <script src="@Url.Content("~/Administration/Scripts/FileUpload/js/canvas-to-blob.min.js")"></script>
+        @*//blueimp Gallery script*@
+        <script src="@Url.Content("~/Administration/Scripts/FileUpload/js/jquery.blueimp-gallery.min.js")"></script>
+        <script src="@Url.Content("~/Administration/Scripts/FileUpload/js/vendor/jquery.ui.widget.js")"></script>
+        <script src="@Url.Content("~/Administration/Scripts/FileUpload/js/jquery.iframe-transport.js")"></script>
+        <script src="@Url.Content("~/Administration/Scripts/FileUpload/js/jquery.fileupload.js")"></script>
+        @*//The File Upload processing plugin*@
+        <script src="@Url.Content("~/Administration/Scripts/FileUpload/js/jquery.fileupload-process.js")"></script>
+        @*//The File Upload image preview & resize plugin*@
+        <script src="@Url.Content("~/Administration/Scripts/FileUpload/js/jquery.fileupload-image.js")"></script>
+        @*//The File Upload audio preview plugin*@
+        <script src="@Url.Content("~/Administration/Scripts/FileUpload/js/jquery.fileupload-audio.js")"></script>
+        @*//The File Upload video preview plugin*@
+        <script src="@Url.Content("~/Administration/Scripts/FileUpload/js/jquery.fileupload-video.js")"></script>
+        @*//The File Upload validation plugin*@
+        <script src="@Url.Content("~/Administration/Scripts/FileUpload/js/jquery.fileupload-validate.js")"></script>
+        @*//The File Upload user interface plugin*@
+        <script src="@Url.Content("~/Administration/Scripts/FileUpload/js/jquery.fileupload-ui.js")"></script>
+        @*Clock-Husam Majed Awajan / 04-08-2017*@
+        <link href="@Url.Content("~/Administration/Content/Clock/Clock.css")" rel="stylesheet" />
+        <script src="@Url.Content("~/Administration/Content/Clock/Clock.js")"></script>
+
+        @*Grid*@
+        <link href="@Url.Content("~/Administration/Scripts/Grid/ui.jqgrid-bootstrap.css")" rel="stylesheet" />
+        <script src="@Url.Content("~/Administration/Scripts/Grid/jquery.jqGrid.min.js")"></script>
+        <script src="@Url.Content("~/Administration/Scripts/Grid/grid.locale-en.js")"></script>
+        <script src="@Url.Content("~/Administration/Scripts/Grid/bootstrap3-typeahead.js")"></script>
+        <script src="@Url.Content("~/Administration/Scripts/Grid/BuildGrid.js")"></script>
+
+        @*boxeswidget*@
+        <link href="@Url.Content("~/Administration/Content/DashboardChart/BoxesWidget/boxeswidget.css")" rel="stylesheet" />
+
+        @*SignalR*@
+        <script src="@Url.Content("~/Administration/Scripts/jquery.signalR-2.2.2.js")"></script>
+        <script src="@Url.Content("~/signalr/hubs")"></script>
+
+        @*PriorityNotify*@
+        <script src="@Url.Content("~/Administration/Scripts/PriorityNotify.js")"></script>
+        <script src="@Url.Content("~/Administration/Scripts/Notify.js")"></script>
+    </head>
+    <style>
+    </style>
+    <body ng-app="SeagullApp" ng-controller="SeagullCtrl" class="hold-transition skin-blue sidebar-mini @if (hideSidebar)
+                                                    {<text>sidebar-collapse</text>}">
+        <div class="throbber">
+            <div class="curtain">
+            </div>
+            <div class="curtain-content">
+                <div>
+                    <h1 class="throbber-header">@T("Common.Wait...")</h1>
+                    <p>
+                        <img src="@Url.Content("~/administration/content/images/throbber-synchronizing.gif")" alt="" />
+                    </p>
+                </div>
+            </div>
+        </div>
+        @Html.Partial("_Loading")
+        <div class="wrapper">
+            @if (IsSectionDefined("header"))
+            {
+                @RenderSection("header")
+            }
+            else
+            {
+                @Html.Widget("admin_header_before", area: "Admin")
+                <div class="main-header" style="background-color: #062e4c;">
+                    <!-- Logo -->
+                    @*<div >
+                            <!-- mini logo for sidebar mini 50x50 pixels -->
+                            <span class="logo-mini"><b>PM</b></span>
+                            <!-- logo for regular state and mobile devices -->
+                            <span class="logo-lg"><b>Prime Ministry</b></span>
+                            <!-- mini logo for sidebar mini 50x50 pixels -->
+
+                        </div>*@
+
+
+
+                    <div class="navbar navbar-static-top" role="navigation">
+                        <span style="color: white;font-size: 15px;line-height: 50px;  text-align: center;font-family: DroidArabicKufiRegular,Arial">
+                            <b>@T("Admin.AdminSystemSystemName")</b>
+                        </span>
+                        <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+                            <span class="sr-only">Toggle navigation</span>
+                        </a>
+
+                        <span class="logo-lg"></span>
+                        @Html.Widget("admin_header_toggle_after", area: "Admin")
+                        <div class="navbar-custom-menu">
+                            @Html.Widget("admin_header_navbar_before", area: "Admin")
+                            <ul class="nav navbar-nav">
+                                <li class="hidden-lg hidden-md hidden-sm">
+                                    <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+                                        <span class="sr-only">&nbsp;</span>
+                                    </a>
+                                </li>
+
+                                @if (currentUser.IsRegistered())
+                                {
+
+                                    @*<li>
+                                            <a href="@Url.Action("Logout", "User", new {area = ""}, null)">
+                                                @T("Admin.Header.Logout")
+                                            </a>
+                                        </li>*@
+                                }
+                                <li>
+                                    @Html.Widget("admin_header_middle", area: "Admin")
+                                </li>
+                                @*<li>
+                                        <a href="@Url.Action("Index", "Home", new {area = ""})">
+                                            @T("Admin.Header.PublicStore")
+                                        </a>
+                                    </li>*@
+
+
+                                @*********************************************************************************************@
+
+
+                                <li class="red dropdown-modal">
+                                    <a data-toggle="dropdown" class="dropdown-toggle" href="#" aria-expanded="false">
+                                        <i class="ace-icon fa fa-bell"></i>
+                                        <span class="badge badge-important" id="countBadge"></span>
+                                    </a>
+
+                                    <ul class="dropdown-menu-right dropdown-navbar navbar-pink dropdown-menu dropdown-caret dropdown-close new-notification-style" style="overflow-y: auto;height: 450px !important;">
+                                        <li class="dropdown-header">
+                                            <i class="ace-icon fa fa-exclamation-triangle"></i>
+                                            <span id="notifyHeader">@T("Admin.Notification") : </span>
+                                        </li>
+                                        <li class="dropdown-content ace-scroll" style="position: relative;">
+                                            <div class="scroll-track" style="display: none;"><div class="scroll-bar"></div></div><div class="scroll-content" style="">
+                                                <ul class="dropdown-menu dropdown-navbar navbar-pink" id="notifyList"></ul>
+                                            </div>
+                                        </li>
+
+                                        <li class="dropdown-footer">
+                                            <a href="#">
+                                                See all notifications
+                                                <i class="ace-icon fa fa-arrow-right"></i>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+
+                                @**************************************************************@
+                                @Html.Action("LanguageSelector", "Common")
+                                <li class="dropdown">
+                                    <a href="#" data-toggle="dropdown">
+                                        <span class="hidden-xs">@currentUser.GetFullName()</span>
+                                        <i class="fa fa-user"></i>
+                                    </a>
+                                    <ul class="maintenance-menu dropdown-menu animated-dropdown-menu bg-light-gry" role="menu">
+                                        @if (currentUser.IsRegistered())
+                                        {
+                                            <li>
+                                                <a href="@Url.Action("ChangePassword", "ChangePassword", new { area = "Admin" })">
+                                                    <i class="fa fa-expeditedssl" aria-hidden="true"></i> <span>@T("Admin.Header.ChangesPassword")</span>
+                                                </a>
+                                            </li>
+                                                <li>
+                                                    <a href="@Url.Action("Profile", "User", new { area = "" }, null)">
+                                                        <i class="fa fa-user" aria-hidden="true"></i> <span>@T("Admin.Header.Profile")</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="@Url.Action("Logout", "User", new {area = ""}, null)">
+                                                        <i class="fa fa-sign-out" aria-hidden="true"></i> <span>@T("Admin.Header.Logout")</span>
+                                                    </a>
+                                                </li>
+                                        }
+
+                                        @*<li>
+                                                <a>
+                                                    @using (Html.BeginForm("ClearCache", "Common", new { area = "Admin" }))
+                                                    {
+                                                        @Html.AntiForgeryToken()
+                                                        @Html.Hidden("returnurl", HttpContext.Current.Request.RawUrl)
+                                                        <button type="submit" class="btn-link">
+                                                            <i class="fa fa-eraser customIcon" aria-hidden="true"></i> <span>@T("Admin.Header.ClearCache")</span>
+                                                        </button>
+                                                    }
+                                                </a>
+                                            </li>*@
+                                        @*<li>
+                                                <a>
+                                                    @using (Html.BeginForm("RestartApplication", "Common", new { area = "Admin" }))
+                                                    {
+                                                        @Html.AntiForgeryToken()
+                                                        @Html.Hidden("returnurl", HttpContext.Current.Request.RawUrl)
+                                                        <button id="restart-application" type="submit" class="btn-link">
+                                                            <i class="fa fa-refresh customIcon" aria-hidden="true"></i> <span>@T("Admin.Header.RestartApplication")</span>
+                                                        </button>
+                                                        <script type="text/javascript">
+                                                            $(document).ready(function () {
+                                                                $("#restart-application").click(function (e) {
+                                                                    showThrobber('@Html.Raw(HttpUtility.JavaScriptStringEncode(T("Admin.Header.RestartApplication.Progress").Text))');
+                                                                });
+                                                            });
+                                                        </script>
+                                                    }
+                                                </a>
+                                            </li>*@
+                                    </ul>
+                                </li>
+                            </ul>
+                            @Html.Widget("admin_header_navbar_after", area: "Admin")
+                        </div>
+                    </div>
+                </div>
+                @Html.Widget("admin_header_after", area: "Admin")
+            }
+            @if (IsSectionDefined("headermenu"))
+            {
+                @RenderSection("headermenu")
+            }
+            else
+            {
+                <div class="main-sidebar">
+                    <div class="sidebar">
+                        @Html.Widget("admin_searchbox_before", area: "Admin")
+                        <div class="sidebar-form">
+                            <div id="search-box">
+                                <input type="text" class="form-control admin-search-box typeahead" placeholder="@T("Admin.Menu.Search")">
+                            </div>
+                        </div>
+                        <script>
+                            $(document).ready(function () {
+                                Admin.Search.init();
+                            });
+                        </script>
+                        @Html.Widget("admin_menu_before", area: "Admin")
+                        @Html.Partial("Menu")
+
+                    </div>
+                </div>
+            }
+
+            <div class="content-wrapper">
+                @*style="padding: 0px 4px 0px 13px;"*@
+                @Html.Partial("Notifications")
+                @* -------------Here My Task------------- *@
+                <div class="container" id="maincontainer" style="width:100%">
+                    @*<div class="row" >*@
+                    @*<div id="fbreadcrumb" class="col-lg-5 col-sm-8 col-xs-12">*@
+                    <div id="fbreadcrumb" class="row" style="margin-bottom: 18px;">
+
+                        <div id="first" class="breadcrumb-nav" style="padding-left: 25px;">
+                            <i class="fa fa-home" style="font-size: 19px;"></i>
+                            @if (isMailOperator || isMailAdmin)
+                            {
+                                <a href="@Url.Action("List", "MailReport")"><span>@T("Admin.MailReport") </span></a>
+                            }
+                            else
+                            {
+                                <a href="@Url.Action("Index", "Home")"><span>@T("Admin.DashBoard") </span></a>
+                            }
+                            <i id="fa_fa_1" class="fa fa-angle-right"></i>
+                            @if (isMailOperator || isMailAdmin)
+                            {
+                                <a href="@Url.Action("List", "MailReport")"><span>@T("Admin.MailReport") </span></a>
+                            }
+                            else
+                            {
+                                <a href="@Url.Action("Index", ViewContext.RouteData.Values["controller"].ToString())"><span>@T(string.Format("Admin.{0}", ViewContext.RouteData.Values["controller"].ToString()))</span></a>
+                            }
+                            <i id="fa_fa_2" class="fa fa-angle-right"></i>
+                            <span class="active">@T(string.Format("Admin.{0}", ViewContext.RouteData.Values["action"].ToString()))</span>
+                            <i class="fa fa-tags"></i>
+                        </div>
+                    </div>
+                    @*@Html.Action("SummaryBoxes", "Home")*@
+                    @*</div>*@
+                    @RenderBody()
+                </div>
+            </div>
+            <div class="main-footer clearfix">
+                @if (!EngineContext.Current.Resolve<StoreInformationSettings>().HidePoweredBySeagullCommerce)
+            {
+                    @*Would you like to remove the "Powered by SeagullCommerce" link in the bottom of the footer?
+                        Please find more info at http://www.Seagull-Technology.com/*@
+                    <div class="pull-left">
+                        Powered by <a href="http://www.Seagull-Technology.com/" target="_blank">@T("Admin.SeagullLabel")</a>
+                    </div>
+                }
+                <div class="pull-right hidden-xs">
+                    <b>@T("Admin.SeagullLabel") version @SeagullVersion.CurrentVersion</b>
+                </div>
+                <div class="text-center">
+                    @{
+                        var dateTimeHelper = EngineContext.Current.Resolve<Seagull.Services.Helpers.IDateTimeHelper>();
+                        var workContext = EngineContext.Current.Resolve<IWorkContext>();
+                        var currentCulture = new CultureInfo(workContext.WorkingLanguage.LanguageCulture);
+                        var dDate = DateTime.Now.AddHours(-5);
+                        dDate = dDate.AddHours(12);
+                    }
+                    @dateTimeHelper.ConvertToUserTime(dDate).ToString("f", currentCulture)
+                </div>
+            </div>
+        </div>
+        <script>
+
+
+
+            var AdminLTEOptions = {
+                boxWidgetOptions: {
+                    boxWidgetIcons: {
+                        collapse: 'fa-minus',
+                        open: 'fa-plus'
+                    }
+                }
+            };
+        </script>
+
+        @Html.SeagullCssFiles(this.Url, ResourceLocation.Foot)
+        @Html.SeagullScripts(this.Url, ResourceLocation.Foot)
+        <a id="backTop" class="btn btn-back-top bg-teal"></a>
+        <script>
+            var requestVerificationTokenAdminLayout = $('input[name="__RequestVerificationToken"]').val();
+            var GetNotifyUrl = '@Url.Action("NotifyForDelayReport", "GenericGets")';
+            var GetDynamicSurveyyUrl = '@Url.Action("DynamicSurveyReport", "GenericGets")';
+            var urlGetPriorityNotify = '@Url.Action("InsertdynamicReportSurvey", "Survey")';
+            $(document).ready(function () {
+                $('#backTop').backTop();
+                $('.selectpicker').selectpicker();
+                NotifyForDelayReport();
+                DynamicSurveyReport();
+                $(window).resize();
+                // GetPriorityNotify();
+                $('a.sidebar-toggle').on('click', function () {
+                    var collapsed = $('body').hasClass('sidebar-collapse');
+                    saveUserPreferences('@(Url.Action("SavePreference", "Preferences"))', '@hideSidebarAttributeName', collapsed);
+                    $('#BroadbandInternet').highcharts().reflow();
+
+                });
+            });
+
+            $('.sidebar-toggle').click(function () {
+                window.setTimeout(function () { $(window).resize(); }, 500);
+                //debugger
+                //$('#BroadbandInternet').highcharts().reflow();
+                //$(window).resize();
+            })
+        </script>
+    </body>
+    </html>
+
+
+    <style>
+        .dropdown_black {
+            color: #4e5765;
+        }
+
+
+        .skin-blue .sidebar-menu > li:hover > a > .fa {
+            transform: rotate(360deg);
+            transition: all 0.80s ease;
+        }
+    </style>

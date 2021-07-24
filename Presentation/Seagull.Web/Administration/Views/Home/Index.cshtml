@@ -1,0 +1,3698 @@
+﻿@model DashboardModel
+@using Seagull.Services.Security
+@using Seagull.Services.Users
+@functions{
+    public void CheckSelectedTab(string tabName, int count)
+    {
+        if (ViewData["SelectedTab"] == null && count == 1)
+        {
+            ViewData["SelectedTab"] = tabName;
+        }
+    }
+}
+@{
+    Html.AppendCssFileParts("~/Administration/Content/ionicons/css/ionicons-2.0.1.min.css");
+    //Floating Notify (Buttons)
+    //Html.AppendCssFileParts("~/Administration/Content/FloatNotify/FloatingNotify.css");
+
+    int count = 0;
+    int countRender = 0;
+    //bool x =
+    bool IsShowOrNot = EngineContext.Current.Resolve<Seagull.Core.IWorkContext>().CurrentUser.ShowDashboard;
+
+    //page title
+    ViewBag.Title = T("Admin.Dashboard").Text;
+    var currentUser = EngineContext.Current.Resolve<Seagull.Core.IWorkContext>().CurrentUser;
+    string EntityName = currentUser.EntityUserId.HasValue ? currentUser.EntityUserId.Value > 0 ? EngineContext.Current.Resolve<Seagull.Services.UserEntitys.IUserEntityService>().GetUserEntityById(currentUser.EntityUserId.Value).Name : string.Empty : string.Empty;
+    ViewData["SelectedTab"] = null;
+    var IsRtl = EngineContext.Current.ContainerManager.Resolve<Seagull.Core.IWorkContext>().WorkingLanguage.Rtl.ToString().ToLower();
+    var IsAdmin = EngineContext.Current.Resolve<Seagull.Core.IWorkContext>().CurrentUser.UserRoles.Where(a => a.Name == "Administrators").Count() > 0;
+    bool IsNotMailOperator = !(EngineContext.Current.Resolve<Seagull.Core.IWorkContext>().CurrentUser.UserRoles.Where(a => a.Name.Contains("Postal Operator")).Count() > 0);
+
+}
+@* DropDown List *@
+<link href="@Url.Content("~/Administration/Content/DropDown/Style.css")" rel="stylesheet" />
+@* Tabs *@
+<link href="@Url.Content("~/Administration/Content/DashboardChart/ChartTabs.css")" rel="stylesheet" />
+<link href="@Url.Content("~/Administration/Content/DropDown/style.css")" rel="stylesheet" />
+@* Tooltip *@
+<link href="@Url.Content("~/Administration/Content/DashboardChart/Tooltip.css")" rel="stylesheet" />
+@* Widgets *@
+<link href="@Url.Content("~/Administration/Content/DashboardChart/BoxesWidget/boxeswidget.css")" rel="stylesheet" />
+@* Ticket *@
+<link href="@Url.Content("~/Administration/Content/DashboardChart/Ticket/ticket.css")" rel="stylesheet" />
+@* 3dBars *@
+<link href="@Url.Content("~/Administration/Content/DashboardChart/3dBars/3dBar.css")" rel="stylesheet" />
+
+@* Echarts *@
+<script src="@Url.Content("~/Administration/Content/DashboardChart/Echarts/echarts.min.js")"></script>
+@* Doughnut *@
+<link href="@Url.Content("~/Administration/Content/DashboardChart/CircleProgress/doughnut.css")" rel="stylesheet" />
+@* Chart.js *@
+<link href="@Url.Content("~/Administration/Content/DashboardChart/ChartJs/CustomChartJs.css")" rel="stylesheet" />
+<script src="@Url.Content("~/Administration/Content/DashboardChart/ChartJs/Chart.min.js")"></script>
+<script src="@Url.Content("~/Administration/Content/DashboardChart/ChartJs/underscore-min.js")"></script>
+<script src="@Url.Content("~/Administration/Content/DashboardChart/ChartJs/moment.min.js")"></script>
+<script src="@Url.Content("~/Administration/Content/DashboardChart/ChartJs/accounting.min.js")"></script>
+@*High Charts*@
+<script src="@Url.Content("~/Administration/Scripts/HighCharts/highcharts.js")"></script>
+<script src="@Url.Content("~/Administration/Scripts/HighCharts/heatmap.js")"></script>
+<script src="@Url.Content("~/Administration/Scripts/HighCharts/bullet.js")"></script>
+<script src="@Url.Content("~/Administration/Scripts/HighCharts/highcharts-3d.js")"></script>
+<script src="@Url.Content("~/Administration/Scripts/HighCharts/exporting.js")"></script>
+<script src="@Url.Content("~/Administration/Scripts/HighCharts/drilldown.js")"></script>
+
+@*<script>
+        $(function () {
+            var chat = $.connection.signalRHub;
+            chat.client.SendMessage = function (Cl_Name, Cl_Message) {
+                $('#Chats').append('<li><strong>' + htmlEncode(Cl_Name)
+                    + '</strong>: ' + htmlEncode(Cl_Message) + '</li>');
+            };
+            $('#UserName').val('@currentUser.Email');
+            $('#TxtMessage').focus();
+            $.connection.hub.start().done(function () {
+                $('#BtnSend').click(function () {
+                    chat.server.send($('#UserName').val(), $('#TxtMessage').val());
+                    $('#TxtMessage').val('').focus();
+                });
+            });
+        });
+
+        function htmlEncode(value) {
+            var encodedValue = $('<div />').text(value).html();
+            return encodedValue;
+        }
+    </script>*@
+@*Husam Awajan / 04-09-2017*@
+
+<style>
+    .flatTittle {
+        /*text-align: center;
+        display: block;
+        background-color: #c0392b;
+        width: 167px;
+        height: 47px;
+        line-height: 46px;
+        font-size: x-large;
+        color: #fff;
+        bottom: 0;
+        left: 12px;
+        right: 0;
+        cursor: pointer;
+        overflow: hidden;
+        border-radius: 5px;
+        box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.3);
+        -webkit-transition: all 0.25s cubic-bezier(0.31, -0.105, 0.43, 1.4);
+        transition: all 0.25s cubic-bezier(0.31, -0.105, 0.43, 1.4);*/
+        padding: 0;
+        margin: 0 8px;
+        font-size: 24px;
+        font-weight: lighter;
+        color: #2679B5;
+    }
+
+    .content-wrapper {
+        min-height: 100% !important;
+    }
+</style>
+
+<style>
+    .card-stats .card-header .card-category:not([class*="text-"]) {
+        color: #9931b0;
+        font-size: 25px;
+    }
+
+    select {
+        text-align: center;
+        text-align-last: center;
+    }
+</style>
+
+<style>
+    .statistic-box {
+        -webkit-border-radius: 4px;
+        border-radius: 4px;
+        text-align: center;
+        color: #fff;
+        background: no-repeat 50% 50%;
+        background-size: cover;
+        margin: 0 0 30px;
+    }
+
+        .statistic-box .number {
+            font-size: 3.125rem;
+            line-height: 1;
+            padding: 32px 0 0;
+        }
+
+        .statistic-box .caption {
+            font-size: 1.0625rem;
+            font-weight: 600;
+            position: relative;
+            min-height: 35px;
+            line-height: 1;
+        }
+
+        .statistic-box.red {
+            background-color: #fa424a;
+            background-image: url(../../Content/images/Ministry.jpg);
+        }
+
+        .statistic-box.purple {
+            background-color: #ac6bec;
+            background-image: url(../../Content/images/statistic-box-purple.png);
+        }
+
+        .statistic-box.yellow {
+            background-color: #fdad2a;
+            background-image: url(../../Content/images/Ministry.jpg);
+        }
+
+        .statistic-box.green {
+            background-color: #46c35f;
+            background-image: url(../../Content/images/statistic-box-green.png);
+        }
+
+        .statistic-box > div {
+            -webkit-border-radius: inherit;
+            border-radius: inherit;
+            height: 142px;
+            background: url(images/statistic-box-grid.png) 50% 0;
+            background-size: 21px 20px;
+            position: relative;
+        }
+
+
+    .card .card-block {
+        padding: 2px;
+    }
+
+    .user-card2 .risk-rate {
+        display: inline-block;
+        margin: 0 auto;
+        padding-top: 12px;
+    }
+
+        .user-card2 .risk-rate span {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 6px dashed #d6d6d6;
+            border-top-color: #53ad57;
+            border-bottom-color: transparent;
+            padding: 25px;
+            display: block;
+            position: relative;
+        }
+
+            .user-card2 .risk-rate span b {
+                font-size: 14px;
+                color: #fff;
+                z-index: 2;
+                position: relative;
+                left: 2px;
+                top: 4px;
+            }
+
+            .user-card2 .risk-rate span:after {
+                content: "";
+                width: 70px;
+                height: 70px;
+                background-color: #53ad57;
+                border-radius: 50%;
+                position: absolute;
+                top: 8px;
+                left: 10px;
+                z-index: 1;
+            }
+
+    .b-t-default {
+        border-top: 1px solid #d6d6d6;
+    }
+
+    .m-t-3 {
+        margin-top: 3px;
+    }
+
+    .m-r-0 {
+        margin-right: 0px;
+    }
+
+    .m-l-0 {
+        margin-left: 0px;
+    }
+
+    .b-r-default {
+        border-right: 1px solid #d6d6d6;
+    }
+
+    .text-muted {
+        color: #868e96 !important;
+    }
+
+    .card .btn-action {
+        margin-top: -2.44rem;
+        margin-right: -9px;
+    }
+
+    .card-style {
+        display: block;
+        color: black;
+        padding: 9px 23px 13px 30px;
+        position: relative;
+    }
+</style>
+
+<style>
+       /*******************************************************************************
+
+    *******************************************************************************/
+       .card {
+           display: block;
+           color: #fff;
+           padding: 38px 25px 16px 20px;
+           position: relative;
+       }
+
+       .title {
+           font-family: 'DroidArabicKufiRegular';
+           margin: 5px 15px 4px 0;
+           font-size: 15px;
+           font-weight: 400;
+           text-transform: uppercase;
+       }
+
+       .num {
+           margin: 5px 15px 4px 0;
+           font-size: 30px;
+           font-size: 3rem;
+           font-weight: 700;
+       }
+
+       .card.icon, .statsBar .i .card:before {
+           width: 110px;
+       }
+
+       .card:before {
+           content: '';
+           height: 100%;
+           position: absolute;
+           right: 0;
+           top: 0;
+           -webkit-transition: all .3s ease;
+           -moz-transition: all .3s ease;
+           -ms-transition: all .3s ease;
+           -o-transition: all .3s ease;
+       }
+
+       .card.icon {
+           position: relative;
+           top: 50%;
+           -webkit-transform: translateY(-50%);
+           -ms-transform: translateY(-50%);
+           transform: translateY(-50%);
+           font-family: 'DroidArabicKufiRegular';
+           position: absolute;
+           right: 0;
+           text-align: center;
+           font-size: 40px;
+           font-size: 4rem;
+       }
+
+       .i.yellow.card {
+           background: #fec006;
+       }
+
+           .i.yellow.card:before {
+               background: #f1b606;
+           }
+
+           .i.yellow.card:hover {
+               background: #f1b606;
+           }
+
+               .i.yellow.card:hover:before {
+                   background: #fec006;
+               }
+
+       .i.pink .card {
+           background: #e81d62;
+       }
+
+           .i.pink .card:before {
+               background: #dc1c5d;
+           }
+
+           .i.pink .card:hover {
+               background: #dc1c5d;
+           }
+
+               .i.pink .card:hover:before {
+                   background: #e81d62;
+               }
+
+       .i.green .card {
+           background: #8ac249;
+       }
+
+           .i.green .card:before {
+               background: #83b845;
+           }
+
+           .i.green .card:hover {
+               background: #83b845;
+           }
+
+               .i.green .card:hover:before {
+                   background: #8ac249;
+               }
+
+       .i.purple .card {
+           background: #9b26af;
+       }
+
+           .i.purple .card:before {
+               background: #b532cc;
+           }
+
+           .i.purple .card:hover {
+               background: #b532cc;
+           }
+
+               .i.purple .card:hover:before {
+                   background: #9b26af;
+               }
+
+       .i.indigo .card {
+           background: #3e50b4;
+       }
+
+           .i.indigo .card:before {
+               background: #4a60dd;
+           }
+
+           .i.indigo .card:hover {
+               background: #4a60dd;
+           }
+
+               .i.indigo .card:hover:before {
+                   background: #3e50b4;
+               }
+
+       .statsInfo {
+           border-top: 1px solid #e6e7ed;
+           margin: 25px 0 0 0;
+           padding-top: 25px;
+       }
+
+           .statsInfo .i {
+               padding: 0;
+               text-align: center;
+           }
+
+               .statsInfo .i .count {
+                   font-size: 30px;
+                   font-size: 3rem;
+                   font-weight: 700;
+               }
+
+               .statsInfo .i .text {
+                   color: #919599;
+               }
+
+               .statsInfo .i:first-child {
+                   border-right: 1px solid #e6e7ed;
+               }
+
+       .faIcon {
+           padding: 12px;
+       }
+
+       .page-content {
+           background-color: #f2f2f285;
+       }
+
+       a.btn-floating.btn-action.ml-auto.mr-4.mdb-color.lighten-3.panel-red {
+           background: #dd5a43 !important;
+       }
+
+       .panel-yellow {
+           background: #ff9800 !important;
+       }
+
+           .panel-yellow > .panel-heading {
+               border-color: #ff9800;
+               color: white;
+               background-color: #ff9800;
+           }
+
+       .panel-green {
+           background: #27ae60 !important;
+       }
+
+           .panel-green > .panel-heading {
+               border-color: #27ae60;
+               color: white;
+               background-color: #27ae60;
+           }
+
+
+       hr.smallHR {
+           margin: 15px 51px 4px 60px;
+       }
+
+       .time.last_login {
+           margin-top: 23px;
+       }
+
+       i.ace-icon.fa.fa-clock-o.bigger-110.last_login {
+           color: green;
+       }
+
+       i.ace-icon.fa.fa-clock-o.bigger-110.last_logout {
+           color: red;
+       }
+
+       .chart-container {
+           position: relative;
+           margin: auto;
+           height: 52vh;
+           width: 80vw;
+       }
+
+       .huge {
+           font-size: 32px;
+       }
+
+       .text-right {
+           text-align: right;
+       }
+
+       .panel-red {
+           border-color: #d9534f;
+       }
+
+           .panel-red > .panel-heading {
+               border-color: #d9534f;
+               color: white;
+               background-color: #d9534f;
+           }
+
+       .card {
+           -webkit-box-shadow: 0 2px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
+           box-shadow: 0 2px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
+           border: 0;
+           font-weight: 400;
+           margin-bottom: 29px;
+           background: white;
+       }
+
+           .card.second {
+               width: 70%;
+               margin: auto;
+               margin-bottom: 20px;
+               margin-top: 42px;
+               padding: 0 0 5px 0px;
+           }
+
+
+           .card.card-cascade .view.view-cascade {
+               -webkit-box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
+               box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
+               -webkit-border-radius: .25rem;
+               border-radius: .25rem;
+           }
+
+           .card.card-cascade.narrower .view.view-cascade {
+               margin-left: 4%;
+               margin-right: 4%;
+               margin-top: -1.25rem;
+           }
+
+       .view {
+           position: relative;
+           overflow: hidden;
+           cursor: default;
+       }
+
+       .card-img-top {
+           width: 100%;
+           border-top-left-radius: calc(.25rem - 1px);
+           border-top-right-radius: calc(.25rem - 1px);
+       }
+
+       .view .mask {
+           position: absolute;
+           top: 0;
+           left: 0;
+           right: 0;
+           bottom: 0;
+           overflow: hidden;
+           width: 100%;
+           height: 100%;
+           background-attachment: fixed;
+       }
+
+       .overlay .mask {
+           opacity: 0;
+           -webkit-transition: all .4s ease-in-out;
+           -o-transition: all .4s ease-in-out;
+           transition: all .4s ease-in-out;
+       }
+
+       .card-body {
+           -ms-flex: 1 1 auto;
+           flex: 1 1 auto;
+           padding: 1.25rem;
+           padding-bottom: 3px;
+       }
+
+       .card .btn-action {
+           margin-top: -1.44rem;
+           margin-bottom: -1.44rem;
+       }
+
+       .btn-floating:hover {
+           -webkit-box-shadow: 0 8px 17px 0 rgba(0,0,0,.2), 0 6px 20px 0 rgba(0,0,0,.19);
+           box-shadow: 0 8px 17px 0 rgba(0,0,0,.2), 0 6px 20px 0 rgba(0,0,0,.19);
+       }
+
+       .mdb-color.lighten-3 {
+           background-color: #929fba;
+       }
+
+       a.waves-effect, a.waves-light {
+           display: inline-block;
+       }
+
+       .btn-floating i {
+           display: inline-block;
+           width: inherit;
+           text-align: center;
+           color: #fff;
+       }
+
+       .btn-floating i {
+           font-size: 2.25rem;
+           line-height: 47px;
+       }
+
+       .btn-floating {
+           float: right;
+           -webkit-box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
+           box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
+           width: 47px;
+           height: 47px;
+           position: relative;
+           z-index: 1;
+           vertical-align: middle;
+           display: inline-block;
+           overflow: hidden;
+           -webkit-transition: all .2s ease-in-out;
+           -o-transition: all .2s ease-in-out;
+           transition: all .2s ease-in-out;
+           margin: 10px;
+           -webkit-border-radius: 50%;
+           border-radius: 50%;
+           padding: 0;
+           border: none;
+           cursor: pointer;
+       }
+
+           .btn-floating.second {
+               float: left;
+               border-radius: 0;
+           }
+
+       .card-title {
+           margin-top: 0px;
+           font-weight: 600;
+           font-family: 'DroidArabicKufiRegular';
+           color: #5a6063;
+           margin-bottom: .75rem;
+           /* margin-right: 62px; */
+           text-align: right;
+           margin-right: 62px;
+       }
+
+       .color-red {
+           background: linear-gradient(60deg, rgb(236, 64, 122), rgb(216, 27, 96));
+       }
+
+       .color-green {
+           background: linear-gradient(60deg, rgb(102, 187, 106), rgb(67, 160, 71));
+       }
+
+       .color-blue {
+           background: #3366cc !important;
+       }
+
+       .color-info {
+           background: #3498db !important;
+       }
+
+       .color-orange {
+           background: #ff9800 !important;
+       }
+
+       .color-blue2 {
+           background: #00a5a8 !important;
+       }
+
+       .color-sea {
+           background: #eaf2f5 !important;
+       }
+
+       .color-purple {
+           background: #6639b6 !important;
+       }
+
+       p.card-category {
+           color: rgb(153, 153, 153);
+           font-size: 14px;
+           text-align: right;
+       }
+
+       h3.card-title {
+           color: rgb(60, 72, 88);
+       }
+
+       .google-visualization-table-table {
+           font-family: 'droid', Trebuchet;
+       }
+
+       #barchart_values g g text {
+           font-family: droid !important;
+       }
+
+       #donutchart g g text {
+           font-family: droid !important;
+       }
+
+       .footer .footer-inner {
+           text-align: left;
+       }
+
+       .rtl .infobox-small > .infobox-data {
+           width: 100% !important;
+           max-width: 100% !important;
+       }
+
+       .infobox-small {
+           width: 35%;
+           height: auto !important;
+           text-align: center !important;
+       }
+
+       .infobox-dark .infobox-content {
+           color: #FFF;
+           text-align: center;
+           display: block;
+           width: 100% !important;
+           max-width: 100%;
+       }
+
+       .row.bool-box {
+           border: 1px dotted;
+           padding: 1rem;
+           margin: 1rem;
+           margin-right: 1rem;
+       }
+
+       body {
+           background: #fff;
+       }
+
+       .metric {
+           padding: 6%;
+       }
+
+           .metric svg {
+               max-width: 100%;
+               margin: auto;
+               display: -webkit-box;
+           }
+
+           .metric path {
+               stroke-width: 75;
+               stroke: #ecf0f1;
+               fill: none;
+           }
+
+           .metric text {
+               font-family: 'DroidArabicKufiRegular';
+           }
+
+           .metric.participation path.data-arc {
+               stroke: #feea3a;
+           }
+
+           .metric.participation text {
+               fill: #5a6063;
+           }
+
+           .metric.completion path.data-arc {
+               stroke: #6639b6;
+           }
+
+           .metric.completion text {
+               fill: #5a6063;
+           }
+
+           .metric.blocked path.data-arc {
+               stroke: #e74c3c;
+           }
+
+           .metric.blocked text {
+               fill: #e74c3c;
+           }
+
+       .card.no-padding {
+           padding: 0px;
+       }
+
+       hr {
+           margin-top: 8px;
+           margin-bottom: 5px;
+           border: 0;
+           border-top: 1px solid #eee;
+       }
+
+       .card .card-title {
+           margin-bottom: 0;
+           font-weight: 500;
+           letter-spacing: .05rem;
+       }
+
+       .text-center {
+           text-align: center;
+       }
+
+       .border-right-blue-grey.border-right-lighten-5 {
+           border-right: 1px solid #ECEFF1 !important;
+       }
+
+       .font-large-2 {
+           font-size: 3rem !important;
+       }
+
+       .text-bold-400 {
+           color: #333;
+           font-weight: 400;
+       }
+
+       .blue-grey.lighten-2 {
+           color: #5a6063 !important;
+       }
+
+       .success {
+           color: #28D094 !important;
+       }
+
+       .danger {
+           color: #FF4961 !important;
+       }
+
+       p, b {
+           margin: 0 0 10px;
+           font-family: 'DroidArabicKufiRegular';
+       }
+
+       .h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
+           font-family: 'DroidArabicKufiRegular';
+       }
+
+       .pull-up:hover {
+           -webkit-transform: translateY(-4px) scale(1.02);
+           -moz-transform: translateY(-4px) scale(1.02);
+           -ms-transform: translateY(-4px) scale(1.02);
+           -o-transform: translateY(-4px) scale(1.02);
+           transform: translateY(-4px) scale(1.02);
+           -webkit-box-shadow: 0 14px 24px rgba(62,57,107,.2);
+           box-shadow: 0 14px 24px rgba(62,57,107,.2);
+           z-index: 999;
+           transition: all .25s ease;
+       }
+
+       .padding-all-0 {
+           padding: 0;
+       }
+
+       .padding-right-0 {
+           padding-right: 0;
+       }
+
+       .padding-left-0 {
+           padding-left: 0;
+       }
+
+       .padding-bottom-0 {
+           padding-bottom: 0px;
+       }
+
+       .card-header {
+           padding: 10px 16px 11px 3px;
+       }
+
+       img {
+           width: 100%;
+       }
+
+       p.blue-grey.lighten-2.mb-0 {
+           font-size: 12px;
+           font-weight: 600;
+       }
+
+       .pt-0, .py-0 {
+           padding-top: 0 !important;
+       }
+
+
+       .progress.progress-sm {
+           height: .5rem !important;
+       }
+
+       .mt-1, .my-1 {
+           margin-top: 1rem !important;
+       }
+
+       .box-shadow-1 {
+           -webkit-box-shadow: 0 7px 12px 0 rgba(62,57,107,.16);
+           box-shadow: 0 7px 12px 0 rgba(62,57,107,.16);
+       }
+
+       .progress {
+           height: 10px;
+           margin-bottom: 20px;
+           overflow: hidden;
+           background-color: #f5f5f5;
+           border-radius: 4px;
+           -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+           box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+       }
+
+       .progress-bar.bg-gradient-x-info {
+           background-color: #1E9FF2 !important;
+       }
+
+       .progress-bar.bg-gradient-x-danger {
+           background-color: #ff9149 !important;
+       }
+
+       .warning {
+           color: #FF9149 !important;
+       }
+
+       .info {
+           color: #1E9FF2 !important;
+       }
+
+       .sucsses2 {
+           color: #28D094 !important;
+       }
+
+       .progress-bar.bg-gradient-x-sucsses2 {
+           background-color: #28D094 !important;
+       }
+
+       .statistic-box {
+           -webkit-border-radius: 4px;
+           border-radius: 4px;
+           text-align: center;
+           color: #fff;
+           background: no-repeat 50% 50%;
+           background-size: cover;
+           margin: 0 0 30px;
+       }
+
+           .statistic-box .number {
+               font-size: 3.125rem;
+               line-height: 1;
+               padding: 32px 0 0;
+           }
+
+           .statistic-box .caption {
+               font-size: 1.0625rem;
+               font-weight: 600;
+               position: relative;
+               min-height: 35px;
+               line-height: 1;
+           }
+
+           .statistic-box.red {
+               background-color: #fa424a;
+               background-image: url(images/statistic-box-red.png);
+           }
+
+           .statistic-box.purple {
+               background-color: #ac6bec;
+               background-image: url(images/statistic-box-purple.png);
+           }
+
+           .statistic-box.yellow {
+               background-color: #fdad2a;
+               background-image: url(images/statistic-box-yellow.png);
+           }
+
+           .statistic-box.green {
+               background-color: #46c35f;
+               background-image: url(images/statistic-box-green.png);
+           }
+
+           .statistic-box > div {
+               -webkit-border-radius: inherit;
+               border-radius: inherit;
+               height: 142px;
+               background: url(images/statistic-box-grid.png) 50% 0;
+               background-size: 21px 20px;
+               position: relative;
+           }
+
+
+       .card .card-block {
+           padding: 2px;
+       }
+
+       .user-card2 .risk-rate {
+           display: inline-block;
+           margin: 0 auto;
+           padding-top: 12px;
+       }
+
+           .user-card2 .risk-rate span {
+               width: 100px;
+               height: 100px;
+               border-radius: 50%;
+               border: 6px dashed #d6d6d6;
+               border-top-color: #53ad57;
+               border-bottom-color: transparent;
+               padding: 25px;
+               display: block;
+               position: relative;
+           }
+
+               .user-card2 .risk-rate span b {
+                   font-size: 14px;
+                   color: #fff;
+                   z-index: 2;
+                   position: relative;
+                   left: 2px;
+                   top: 4px;
+               }
+
+               .user-card2 .risk-rate span:after {
+                   content: "";
+                   width: 70px;
+                   height: 70px;
+                   background-color: #53ad57;
+                   border-radius: 50%;
+                   position: absolute;
+                   top: 8px;
+                   left: 10px;
+                   z-index: 1;
+               }
+
+       .b-t-default {
+           border-top: 1px solid #d6d6d6;
+       }
+
+       .m-t-3 {
+           margin-top: 3px;
+       }
+
+       .m-r-0 {
+           margin-right: 0px;
+       }
+
+       .m-l-0 {
+           margin-left: 0px;
+       }
+
+       .b-r-default {
+           border-right: 1px solid #d6d6d6;
+       }
+
+       .text-muted {
+           color: #868e96 !important;
+       }
+
+       .card .btn-action {
+           margin-top: -2.44rem;
+           margin-right: -9px;
+       }
+
+       .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+           padding: 8px;
+           line-height: 1.42857143;
+           vertical-align: top;
+           border-top: 1px solid #ddd;
+       }
+
+       .border-top-0 {
+           border-top: 0 !important;
+       }
+
+       table.table.mb-0 {
+           margin-bottom: 0 !important;
+       }
+</style>
+
+<style>
+    .image-container {
+        display: flex;
+        justify-content: center;
+    }
+
+    .ui-jqgrid-htable,
+    .ui-jqgrid-btable,
+    .ui-jqgrid-pager,
+    .ui-jqgrid-view,
+    .ui-jqgrid-bdiv,
+    .ui-jqgrid-hdiv,
+    .ui-jqgrid-hbox,
+    .ui-jqgrid {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    .modal-dialog {
+        width: 80%;
+    }
+
+    .projectViewer {
+        display: block;
+        width: 100%;
+        position: relative;
+        cursor: pointer;
+    }
+
+        .projectViewer:hover i {
+            display: block !important;
+            position: absolute;
+            right: 5;
+            top: 50%;
+            margin-top: -7.5px;
+        }
+
+    span {
+        text-decoration: none !important;
+    }
+</style>
+
+@if (IsAdmin)
+{
+    <div class="pull-right">
+        <div class="btn-group">
+            <span class="btn btn-success pull-right fileinput-button">
+                <input id="btn" value="Refresh" type="button" name="btn">
+                <i class="fa fa-refresh"></i>
+                @*<span>Refresh</span>*@
+                @*<input type="button" value="Refresh">*@
+            </span>
+        </div>
+    </div>
+}
+
+<script>
+    $(function () {
+        $('input').on('click', function () {
+            $.ajax({
+                url: "@Url.Action("ShowHideDashboard", "Home")",
+                type: 'POST',
+                cache: false,
+                data: { __RequestVerificationToken: requestVerificationToken },
+                success: function (result) {
+                    debugger
+                    @IsShowOrNot = result;
+                    location.reload();
+                }
+            });
+        });
+    });
+
+
+    @*function ShowHideDashboard(){
+        debugger
+        $.ajax({
+            url: "@Url.Action("ShowHideDashboard", "Home")",
+            type: 'POST',
+            cache: false,
+            data: { __RequestVerificationToken: requestVerificationToken },
+            success: function (result) {
+                location.reload();
+            }
+        });
+    }*@
+
+</script>
+
+@* Dashboard for admin*@
+@if ((currentUser.UserOperatorId.Value == 0 && IsNotMailOperator) && IsShowOrNot)
+{
+    <sg-tabs>
+        <sg-tab title="@T("Admin.Dashboard.Statistical")">
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                    <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                        <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                        <div class="card-block text-center">
+                            <h4 class="card-title">@T("Admin.Dashboard.BroadbandInternetFixedOrMobile")</h4>
+                            <hr>
+                            <div class="card-body">
+                                <div id="BroadbandInternet" style="width:100%;margin: 0 auto"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                    <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                        <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                        <div class="card-block text-center">
+                            <h4 class="card-title">@T("Admin.Dashboard.InternetSubscribers")</h4>
+                            <hr>
+                            <div class="card-body">
+                                <div id="InternetSubscribersColumn"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                    <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                        <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                        <div class="card-block text-center">
+                            <h4 class="card-title">@T("Admin.Dashboard.TotalNumberOfMobilePhoneSubscribersPrepaidOrPostpaid")</h4>
+                            <hr>
+                            <div class="card-body">
+                                <div id="PrepaidOrPostpaid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                    <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                        <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                        <div class="card-block text-center">
+                            <h4 class="card-title">@T("Admin.Dashboard.PercentageOfSpread")</h4>
+                            <h4 class="card-title title"></h4>
+                            <hr>
+                            <div class="card-body">
+                                <div id="PercentageOfSpread"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                    <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                        <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-pie-chart"></i></a>
+                        <div class="card-block text-center">
+                            <h4 class="card-title">@T("Admin.Dashboard.TotalNumberOfMobilePhoneSubscribers")</h4>
+                            <hr>
+                            <div class="card-body">
+                                <div id="PrepareMobileSubscribers"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                    <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                        <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                        <div class="card-block text-center">
+                            <h4 class="card-title">@T("Admin.Dashboard.InternetBrodbandPerTech")</h4>
+                            <hr>
+                            <div class="card-body">
+                                <div id="InternetBrodbandPerTechId"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                    <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                        <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                        <div class="card-block text-center">
+                            <h4 class="card-title">@T("Admin.Dashboard.InternetBrodbandPerTechBarChart")</h4>
+                            <hr>
+                            <div class="card-body">
+                                <div id="InternetBrodbandPerTechBarChartId"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                    <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                        <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                        <div class="card-block text-center">
+                            <h4 class="card-title">@T("Admin.Dashboard.BraodbandSubscriptions")</h4>
+                            <hr>
+                            <div class="card-body">
+                                <div id="MobileBraodbandSubscriptionsId"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                    <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                        <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                        <div class="card-block text-center">
+                            <h4 class="card-title">@T("Admin.Dashboard.NumberOfEmployers")</h4>
+                            <hr>
+                            <div class="card-body">
+                                <div id="NumberOfEmployersId"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                    <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                        <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                        <div class="card-block text-center">
+                            <h4 class="card-title">@T("Admin.Dashboard.Investment")</h4>
+                            <hr>
+                            <div class="card-body">
+                                <div id="InvestmentId"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12" style="height: auto;">
+                    <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                        <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                        <div class="card-block text-center">
+                            <h4 class="card-title">@T("Admin.Dashboard.RevenueVolume")</h4>
+                            <hr>
+                            <div class="card-body">
+                                <div id="RevenueVolume"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </sg-tab>
+
+        <sg-tab title="@T("Admin.Dashboard.MarketShares")">
+            <div class="row">
+                <div class="col-lg-4 col-md-4 col-sm-4">
+                    <div class="card user-card2 pull-up" style="height: auto;width:100%;">
+                        <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-pie-chart"></i></a>
+                        <div class="card-block text-center">
+                            <h4 class="card-title">@T("Admin.Dashboard.FixedTelephonyService")</h4>
+                            <hr>
+                            <div class="card-body">
+                                <div id="FixedTelephonyServiceId"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-4">
+                    <div class="card user-card2 pull-up" style="height: auto;width:100%;">
+                        <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-pie-chart"></i></a>
+                        <div class="card-block text-center">
+                            <h4 class="card-title">@T("Admin.Dashboard.StandardMobileService")</h4>
+                            <hr>
+                            <div class="card-body">
+                                <div id="StandardMobileServiceId"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-4">
+                    <div class="card user-card2 pull-up" style="height: auto;width:100%;">
+                        <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-pie-chart"></i></a>
+                        <div class="card-block text-center">
+                            <h4 class="card-title">@T("Admin.Dashboard.DedicatedMobileService")</h4>
+                            <hr>
+                            <div class="card-body">
+                                <div id="DedicatedMobileServiceId"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 col-md-4 col-sm-4">
+                    <div class="card user-card2 pull-up" style="height: auto;width:100%;">
+                        <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-pie-chart"></i></a>
+                        <div class="card-block text-center">
+                            <h4 class="card-title">@T("Admin.Dashboard.FixedBroadbandService")</h4>
+                            <hr>
+                            <div class="card-body">
+                                <div id="FixedBroadbandServiceId"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-4">
+                    <div class="card user-card2 pull-up" style="height: auto;width:100%;">
+                        <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-pie-chart"></i></a>
+                        <div class="card-block text-center">
+                            <h4 class="card-title">@T("Admin.Dashboard.FTTH")</h4>
+                            <hr>
+                            <div class="card-body">
+                                <div id="FTTHId"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-4">
+                    <div class="card user-card2 pull-up" style="height: auto;width:100%;">
+                        <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-pie-chart"></i></a>
+                        <div class="card-block text-center">
+                            <h4 class="card-title">@T("Admin.Dashboard.ModernInterfaceLeasesLine")</h4>
+                            <hr>
+                            <div class="card-body">
+                                <div id="ModernInterfaceLeasesLineId"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </sg-tab>
+
+        <sg-tab title="@T("Admin.Dashboard.ListOfICTIndicators")">
+            <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="QuarterlyPerformanceIndicatorsCtrl">
+                @if (IsRtl.Equals("true"))
+                {
+                <div><h2 style='color:#000000;font-size: 20px;font-family: fantasy;text-align:-webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-right:46%;'>@T("Admin.Seagull.TRC.FixedTariffReport.QuarterlyKPIs")</h2></div>
+                }
+                else
+                {
+                <div><h2 style='color:#000000;font-size: 20px;font-family: fantasy;text-align:-webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-left:46%;'>@T("Admin.Seagull.TRC.FixedTariffReport.QuarterlyKPIs")</h2></div>
+                }
+                <div id="QuarterlyPerformanceIndicatorsSearchButtons" class="QuarterlyKpisBtn" ng-click="QuarterlyPerformanceIndicatorsSearch()"></div>
+                @if (IsRtl.Equals("true"))
+                {
+                <span class="btn btn-success pull-left " style="margin-right: 25px" ng-click="QuarterlyPerformanceIndicatorsPrint()"> @T("Admin.Print")</span>
+                }
+                else
+                {
+                <span class="btn btn-success pull-left " style="margin-left: 25px" ng-click="QuarterlyPerformanceIndicatorsPrint()"> @T("Admin.Print")</span>
+                }
+                <div class="Space" style="height:5px;"></div>
+                <div class="box-body" id="QuarterlyPerformanceIndicatorsViewbody">
+                    <div id="QuarterlyPerformanceIndicatorsView">
+                    </div>
+                </div>
+            </form>
+            <form sg-form name="myform" data-ctrl="SystemReport" data-view="False" token="@Html.RequestVerificationToken("TestSystemReport")" form-controller="AnnualPerformanceIndicatorsCtrl">
+                @if (IsRtl.Equals("true"))
+                {
+                <div><h2 style='color:#000000;font-size: 20px;font-family: fantasy;text-align:-webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-right:46%;'>@T("Admin.Seagull.TRC.FixedTariffReport.AnnualKPIs")</h2></div>
+                }
+                else
+                {
+                <div><h2 style='color:#000000;font-size: 20px;font-family: fantasy;text-align:-webkit-center;border: ;border-radius: 7px;width: 210px;padding: 6px;margin-left:46%;'>@T("Admin.Seagull.TRC.FixedTariffReport.AnnualKPIs")</h2></div>
+                }
+
+                <div id="AnnualPerformanceIndicatorsSearchButtons" class="AnnualKpisBtn" ng-click="AnnualPerformanceIndicatorsSearch()"></div>
+
+                @if (IsRtl.Equals("true"))
+                {
+                <span class="btn btn-success pull-left " style="margin-right: 25px" ng-click="AnnualPerformanceIndicatorsPrint()"> @T("Admin.Print")</span>
+                }
+                else
+                {
+                <span class="btn btn-success pull-left " style="margin-left: 25px" ng-click="AnnualPerformanceIndicatorsPrint()"> @T("Admin.Print")</span>
+                }
+                <div class="Space" style="height:5px;"></div>
+                <div class="box-body">
+                    <div id="AnnualPerformanceIndicatorsView">
+                    </div>
+                </div>
+            </form>
+        </sg-tab>
+    </sg-tabs>
+}
+
+    @* Dashboard for Umnia + Zain + Orange*@
+    @if (((currentUser.UserOperatorId.Value == 13 || currentUser.UserOperatorId.Value == 11 || currentUser.UserOperatorId.Value == 12) && IsNotMailOperator) && IsShowOrNot)
+    {
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                    <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                    <div class="card-block text-center">
+                        <h4 class="card-title">@T("Admin.Dashboard.NumberOfEmployers")</h4>
+                        <hr>
+                        <div class="card-body">
+                            <div id="NumberOfEmployersId"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                    <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                    <div class="card-block text-center">
+                        <h4 class="card-title">@T("Admin.Dashboard.TotalNumberOfMobilePhoneSubscribersPrepaidOrPostpaid")</h4>
+                        <hr>
+                        <div class="card-body">
+                            <div id="PrepaidOrPostpaid"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                    <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                    <div class="card-block text-center">
+                        <h4 class="card-title">@T("Admin.Dashboard.InternetSubscribers")</h4>
+                        <hr>
+                        <div class="card-body">
+                            <div id="InternetSubscribersColumn"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                    <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                    <div class="card-block text-center">
+                        <h4 class="card-title">@T("Admin.Dashboard.BraodbandSubscriptions")</h4>
+                        <hr>
+                        <div class="card-body">
+                            <div id="MobileBraodbandSubscriptionsId"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                    <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                    <div class="card-block text-center">
+                        <h4 class="card-title">@T("Admin.Dashboard.InternetBrodbandPerTech")</h4>
+                        <hr>
+                        <div class="card-body">
+                            <div id="InternetBrodbandPerTechId"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                    <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                    <div class="card-block text-center">
+                        <h4 class="card-title">@T("Admin.Dashboard.InternetBrodbandPerTechBarChart")</h4>
+                        <hr>
+                        <div class="card-body">
+                            <div id="InternetBrodbandPerTechBarChartId"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+
+    @* زين داتا / مدى/ اورنج انترنت / اورنج الهاتف الثابت*@
+    @if (((currentUser.UserOperatorId.Value == 32 || currentUser.UserOperatorId.Value == 27 || currentUser.UserOperatorId.Value == 14 || currentUser.UserOperatorId.Value == 16) && IsNotMailOperator) && IsShowOrNot)
+    {
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12" style="height: auto;">
+                <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                    <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                    <div class="card-block text-center">
+                        <h4 class="card-title">@T("Admin.Dashboard.NumberOfEmployers")</h4>
+                        <hr>
+                        <div class="card-body">
+                            <div id="NumberOfEmployersId"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                    <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                    <div class="card-block text-center">
+                        <h4 class="card-title">@T("Admin.Dashboard.InternetBrodbandPerTech")</h4>
+                        <hr>
+                        <div class="card-body">
+                            <div id="InternetBrodbandPerTechId"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                    <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                    <div class="card-block text-center">
+                        <h4 class="card-title">@T("Admin.Dashboard.InternetBrodbandPerTechBarChart")</h4>
+                        <hr>
+                        <div class="card-body">
+                            <div id="InternetBrodbandPerTechBarChartId"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+
+    @*اورنج الهاتف الثابت*@
+    @if ((currentUser.UserOperatorId.Value == 10 && IsNotMailOperator) && IsShowOrNot)
+    {
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                    <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                    <div class="card-block text-center">
+                        <h4 class="card-title">@T("Admin.Dashboard.InternetBrodbandPerTech")</h4>
+                        <hr>
+                        <div class="card-body">
+                            <div id="InternetBrodbandPerTechId"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                    <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                    <div class="card-block text-center">
+                        <h4 class="card-title">@T("Admin.Dashboard.InternetBrodbandPerTechBarChart")</h4>
+                        <hr>
+                        <div class="card-body">
+                            <div id="InternetBrodbandPerTechBarChartId"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12" style="height: auto;">
+                <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                    <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                    <div class="card-block text-center">
+                        <h4 class="card-title">@T("Admin.Dashboard.LandlineSubscribers")</h4>
+                        <hr>
+                        <div class="card-body">
+                            <div id="LandlineSubscribers"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12" style="height: auto;">
+                <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                    <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                    <div class="card-block text-center">
+                        <h4 class="card-title">@T("Admin.Dashboard.NumberOfEmployers")</h4>
+                        <hr>
+                        <div class="card-body">
+                            <div id="NumberOfEmployersId"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @* Dashboard for another Operator*@
+    @if ((currentUser.UserOperatorId.Value > 0 && (currentUser.UserOperatorId.Value != 13 && currentUser.UserOperatorId.Value != 14 && currentUser.UserOperatorId.Value != 11 && currentUser.UserOperatorId.Value != 16
+                            && currentUser.UserOperatorId.Value != 32 && currentUser.UserOperatorId.Value != 12 && currentUser.UserOperatorId.Value != 10 && currentUser.UserOperatorId.Value != 27) && IsNotMailOperator) && IsShowOrNot)
+    {
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                    <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                    <div class="card-block text-center">
+                        <h4 class="card-title">@T("Admin.Dashboard.NumberOfEmployers")</h4>
+                        <hr>
+                        <div class="card-body">
+                            <div id="NumberOfEmployersId"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 col-md-6 col-sm-6" style="height: auto;">
+                <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                    <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                    <div class="card-block text-center">
+                        <h4 class="card-title">@T("Admin.Dashboard.InternetBrodbandPerTech")</h4>
+                        <hr>
+                        <div class="card-body">
+                            <div id="InternetBrodbandPerTechId"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12" style="height: auto;">
+                <div class="card user-card2 pull-up" style="height: auto;width: 100%;">
+                    <a class="btn-floating btn-action ml-auto mr-4 mdb-color lighten-3 bg-light-blue-gradient"><i class="fa fa-bar-chart"></i></a>
+                    <div class="card-block text-center">
+                        <h4 class="card-title">@T("Admin.Dashboard.InternetBrodbandPerTechBarChart")</h4>
+                        <hr>
+                        <div class="card-body">
+                            <div id="InternetBrodbandPerTechBarChartId"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+
+    @Html.AntiForgeryToken()
+    <script>
+        var requestVerificationToken = $('input[name="__RequestVerificationToken"]').val();
+        var token = "@Html.RequestVerificationToken("Home")";
+
+            $(document).ready(function () {
+                Highcharts.setOptions({
+                    lang: {
+                        thousandsSep: ','
+                    }
+                });
+
+                //Fixed Line By commerical
+                $.ajax({
+                    url: "@Url.Action("FixedLinePerResidentialAndBusinesChart", "Home")",
+                    type: 'POST',
+                    cache: false,
+                    data: { __RequestVerificationToken: requestVerificationToken },
+                    success: function (result) {
+
+                        if ($('#LandlineSubscribers').length) {
+                            var LandlineSubscribersEntity = Highcharts.chart('LandlineSubscribers', {
+                                chart: {
+                                    type: 'column',
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                    }
+                                },
+                                title: {
+                                    text: ''
+                                },
+                                xAxis: {
+                                    type: 'category'
+                                },
+                                yAxis: {
+                                    min: 0,
+                                    title: {
+                                        text: '@T("Admin.MobilePhoneSubscriberSetup")'
+                                    }
+                                },
+                                legend: {
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    rtl: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '16px',
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                        textAlign: 'center',
+                                        pointFormat: '{series.name}'
+                                    },
+                                    enabled: true,
+                                    verticalAlign: 'bottom',
+                                    align: 'center',
+                                    layout: 'horizontal',
+
+                                },
+                                tooltip: {
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    rtl: '@T("Admin.IsRtl")',
+                                    enabled: true,
+                                    //headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                                    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}:</td>' +
+                                        '<td style="padding:0"><b>{point.y:,.0f}  </b></td></tr></br>',
+                                    footerFormat: '</table>',
+                                    shared: true,
+                                    useHTML: true
+                                },
+                                plotOptions: {
+                                    column: {
+                                        stacking: 'normal'
+                                    }
+                                },
+                                series: result.finalDataOfInternetSubscribers.TotalOf3GAnd4GPerYear,
+                                responsive: {
+                                    rules: [{
+                                        condition: {
+                                            maxWidth: 900
+                                        },
+                                        chartOptions: {
+                                            legend: {
+                                                align: 'center',
+                                                verticalAlign: 'bottom',
+                                                layout: 'horizontal'
+                                            },
+                                            yAxis: {
+                                                labels: {
+                                                    align: 'left',
+                                                    x: 0,
+                                                    y: -5
+                                                },
+                                                title: {
+                                                    text: null
+                                                }
+                                            },
+                                            subtitle: {
+                                                text: null
+                                            },
+                                            credits: {
+                                                enabled: false
+                                            }
+                                        }
+                                    }]
+                                },
+                                drilldown: {
+                                    series: result.finalDataOfInternetSubscribers.TotalOf3GAnd4GPerQuarterAndOperator
+                                }
+                            });
+                        }
+                    }
+                });
+
+                if(@currentUser.UserOperatorId.Value == 0){
+                    // إجمالي أعداد مشتركي الهاتف المتنقل
+                    $.ajax({
+                        url: "@Url.Action("PrepareMobileSubscribersChart", "Home")",
+                        type: 'POST',
+                        cache: false,
+                        data: { __RequestVerificationToken: requestVerificationToken },
+                        success: function (result) {
+
+                            if ($('#PrepareMobileSubscribers').length) {
+                                var PrepareMobileSubscribersEntity = Highcharts.chart('PrepareMobileSubscribers', {
+                                    chart: {
+                                        type: 'column',
+
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                        }
+                                    },
+                                    title: {
+                                        text: ''
+                                    },
+                                    xAxis: {
+                                        type: 'category',
+                                        labels: {
+                                            rotation: 0,
+                                            useHTML: '@T("Admin.IsRtl")',
+                                            style: {
+                                                fontSize: '13px',
+                                                fontFamily: '@T("Admin.FontStyle")',
+                                            }
+                                        }
+                                    },
+                                    yAxis: {
+                                        min: 0,
+                                        title: {
+                                            text: '@T("Admin.NumberOfParticipants")'
+                                        }
+                                    },
+                                    legend: {
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontSize: '16px',
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                            textAlign: 'center'
+                                        },
+                                        enabled: true,
+                                        verticalAlign: 'bottom',
+                                        align: 'center',
+                                        layout: 'horizontal',
+
+                                    },
+                                    plotOptions: {
+                                        series: {
+                                            borderWidth: 0,
+                                            dataLabels: {
+                                                enabled: true,
+                                                //format: '{point.y:,.0f}',
+                                                formatter: function () {
+                                                    if ((this.y + "").length >= 4)
+                                                        return Math.round(this.y / 1000) + 'K';
+                                                    else
+                                                        return Math.round(this.y);
+                                                },
+                                                useHTML: '@T("Admin.IsRtl")',
+                                                style: {
+                                                    fontFamily: '@T("Admin.FontStyle")',
+                                                    fontSize: '15px',
+                                                }
+                                            }
+                                        }
+                                    },
+                                    tooltip: {
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        enabled: true,
+                                        style: {
+                                            fontSize: '16px',
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                            textAlign: 'center'
+                                        },
+                                        headerFormat: '',
+                                        pointFormat: '<span>{point.name}</span>: <b>{point.y:,.0f}',
+                                    },
+                                    series: [{
+                                        name: '@T("Admin.Year")',
+                                        data: result.mobileSubscribersData.FixedLineYear
+                                    }],
+                                    responsive: {
+                                        rules: [{
+                                            condition: {
+                                                maxWidth: 900
+                                            },
+                                            chartOptions: {
+                                                legend: {
+                                                    align: 'center',
+                                                    verticalAlign: 'bottom',
+                                                    layout: 'horizontal'
+                                                },
+                                                yAxis: {
+                                                    labels: {
+                                                        align: 'left',
+                                                        x: 0,
+                                                        y: -5
+                                                    },
+                                                    title: {
+                                                        text: null
+                                                    }
+                                                },
+                                                subtitle: {
+                                                    text: null
+                                                },
+                                                credits: {
+                                                    enabled: false
+                                                }
+                                            }
+                                        }]
+                                    },
+                                    drilldown: {
+                                        series: result.mobileSubscribersData.Drilldown
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+
+
+                if(@currentUser.UserOperatorId.Value >= 0){
+                    // NumberOfEmployersChart
+                    $.ajax({
+                        url: "@Url.Action("NumberOfEmployersChart", "Home")",
+                        type: 'POST',
+                        cache: false,
+                        data: { __RequestVerificationToken: requestVerificationToken },
+                        success: function (result) {
+                            if ($('#NumberOfEmployersId').length) {
+                                var NumberOfEmployersEntity = Highcharts.chart('NumberOfEmployersId', {
+                                    chart: {
+                                        type: 'column',
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                    },
+                                    title: {
+                                        text: ''
+                                    },
+                                    xAxis: {
+                                        categories: result.finalNumberOfEmployersChartData.years,
+                                        crosshair: true
+                                    },
+                                    yAxis: {
+                                        min: 0,
+                                        title: {
+                                            text: 'Number of employees'
+                                        }
+                                    },
+                                    tooltip: {
+                                        //headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                                        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                                            '<td style="padding:0"><b>{point.y:,.0f}</b> </td></tr></br>',
+                                        footerFormat: '</table>',
+                                        shared: true,
+                                        useHTML: true
+                                    },
+                                    legend: {
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontSize: '16px',
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                            textAlign: 'center'
+                                        },
+                                        enabled: true,
+                                        verticalAlign: 'bottom',
+                                        align: 'center',
+                                        layout: 'horizontal',
+
+                                    },
+                                    plotOptions: {
+                                        column: {
+                                            pointPadding: 0.2,
+                                            borderWidth: 0
+                                        }
+                                    },
+                                    series: [{
+                                        name: '@T("Admin.Male")',
+                                        data: result.finalNumberOfEmployersChartData.dataMale
+
+                                    }, {
+                                        name: '@T("Admin.Female")',
+                                        data: result.finalNumberOfEmployersChartData.dataFemale
+
+                                    }, {
+                                        name: '@T("Admin.Total")',
+                                        data: result.finalNumberOfEmployersChartData.dataTotal
+
+                                    }]
+                                });
+                            }
+                        }
+                    });
+                }
+
+
+
+                if(@currentUser.UserOperatorId.Value == 0){
+                    // InvestmentChart
+                    $.ajax({
+                        url: "@Url.Action("InvestmentChart", "Home")",
+                        type: 'POST',
+                        cache: false,
+                        data: { __RequestVerificationToken: requestVerificationToken },
+                        success: function (result) {
+
+                            if ($('#InvestmentId').length) {
+                                var NumberOfEmployersEntity = Highcharts.chart('InvestmentId', {
+                                    chart: {
+                                        type: 'column',
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                    },
+                                    title: {
+                                        text: ''
+                                    },
+                                    xAxis: {
+                                        type: 'category'
+                                    },
+                                    yAxis: {
+                                        title: {
+                                            text: 'Investment in JD'
+                                        }
+
+                                    },
+                                    legend: {
+                                        enabled: false,
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                    },
+                                    plotOptions: {
+                                        series: {
+                                            borderWidth: 0,
+                                            dataLabels: {
+                                                enabled: true,
+                                                formatter: function () {
+                                                    if ((this.y + "").length >= 4)
+                                                        return Math.round(this.y / 1000) + 'K';
+                                                    else
+                                                        return Math.round(this.y);
+                                                },
+                                                //format: '{point.y:,.1f}'
+                                            }
+                                        }
+                                    },
+
+                                    tooltip: {
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        yAlign: 'bottom',
+                                        pointFormat: '<b>{point.y:,.0f}</b>'
+                                    },
+
+                                    series: [
+                                        {
+                                            name: "",
+                                            colorByPoint: true,
+                                            data: result.finalData.finaldata
+                                        }
+                                    ],
+                                    drilldown: {
+                                        drillUpButton: {
+                                            position: {
+                                                verticalAlign: 'top',
+                                                align: 'center'
+                                            }
+                                        },
+                                        series: result.finalData.finaldrill
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+
+                // InternetBroadbandPerTechChart (Bar chart)
+                if(@currentUser.Id > 0) {
+                    $.ajax({
+                        url: "@Url.Action("InternetBroadbandPerTechBarChart", "Home")",
+                        type: 'POST',
+                        cache: false,
+                        data: { __RequestVerificationToken: requestVerificationToken },
+                        success: function (result) {
+                            if ($('#InternetBrodbandPerTechBarChartId').length) {
+                                var InternetBroadbandPerTechChartEntity = Highcharts.chart('InternetBrodbandPerTechBarChartId', {
+                                    chart: {
+                                        type: 'column',
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                    },
+                                    title: {
+                                        text: '@T("Admin.Year") : ' + result.FinalInternetBroadbandPerTechBarChartData.data[0].Year + ' , '
+                                            + '@T("Admin.Q") : ' + result.FinalInternetBroadbandPerTechBarChartData.data[0].Q
+                                    },
+                                    xAxis: {
+                                        type: 'category'
+                                    },
+                                    yAxis: {
+                                        title: {
+                                            text: ''
+                                        }
+
+                                    },
+                                    legend: {
+                                        enabled: false
+                                    },
+                                    plotOptions: {
+                                        series: {
+                                            borderWidth: 0,
+                                            dataLabels: {
+                                                enabled: true,
+                                                format: '{point.y:.0f}'
+                                            }
+                                        }
+                                    },
+                                    tooltip: {
+                                        //headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        pointFormat: '<b>{point.y:,.0f}</b>'
+                                    },
+
+                                    series: [
+                                        {
+                                            name: '@T("Admin.Tech")',
+                                            colorByPoint: true,
+                                            data: result.FinalInternetBroadbandPerTechBarChartData.data
+                                        }
+                                    ]
+                                });
+                            }
+                        }
+                    });
+                }
+
+                if(@currentUser.Id > 0) {
+                    // Internet Broadband Per Tech
+                    $.ajax({
+                        url: "@Url.Action("InternetBroadbandPerTechChart", "Home")",
+                        type: 'POST',
+                        cache: false,
+                        data: { __RequestVerificationToken: requestVerificationToken },
+                        success: function (result) {
+                            // Fixed Telephony Service
+                            if ($('#InternetBrodbandPerTechId').length) {
+                                var InternetBrodbandPerTechIdEntity = Highcharts.chart('InternetBrodbandPerTechId', {
+                                    chart: {
+                                        type: 'pie',
+
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                        }
+                                    },
+                                    title: {
+                                        text: '@T("Admin.Year") : ' + result.FinalInternetBroadbandPerTechData.data[0].Year + ' , ' + '@T("Admin.Q") : ' + result.FinalInternetBroadbandPerTechData.data[0].Q
+                                    },
+                                    legend: {
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontSize: '16px',
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                            textAlign: 'center'
+                                        },
+                                        enabled: true,
+                                        verticalAlign: 'bottom',
+                                        align: 'center',
+                                        layout: 'horizontal',
+
+                                    },
+                                    plotOptions: {
+                                        series: {
+                                            borderWidth: 0,
+                                            dataLabels: {
+                                                enabled: true,
+                                                format: '{point.y:,.0f}%',
+                                                useHTML: '@T("Admin.IsRtl")',
+                                                style: {
+                                                    fontFamily: '@T("Admin.FontStyle")',
+                                                    fontSize: '15px',
+                                                }
+                                            },
+                                            showInLegend: true
+                                        },
+
+                                    },
+
+                                    tooltip: {
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontSize: '16px',
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                            textAlign: 'center'
+                                        },
+                                        //headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                                        pointFormat: '<b>{point.y:,.0f} %</b>'
+                                    },
+
+                                    series: [{
+                                        data: result.FinalInternetBroadbandPerTechData.data
+                                    }],
+                                    responsive: {
+                                        rules: [{
+                                            condition: {
+                                                maxWidth: 900
+                                            },
+                                            chartOptions: {
+                                                legend: {
+                                                    align: 'center',
+                                                    verticalAlign: 'bottom',
+                                                    layout: 'horizontal'
+                                                },
+                                                yAxis: {
+                                                    labels: {
+                                                        align: 'left',
+                                                        x: 0,
+                                                        y: -5
+                                                    },
+                                                    title: {
+                                                        text: null
+                                                    }
+                                                },
+                                                subtitle: {
+                                                    text: null
+                                                },
+                                                credits: {
+                                                    enabled: false
+                                                }
+                                            }
+                                        }]
+                                    },
+                                    dataLabels: {
+                                        enabled: false,
+                                        rotation: -90,
+                                        align: 'center',
+                                        format: '{point.y:.0f}', // one decimal
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontSize: '13px',
+                                            fontFamily: '@T("Admin.FontStyle")'
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+
+
+                // الحصص السوقية
+                $.ajax({
+                    url: "@Url.Action("MarketSharesFixedTelephonyServiceChart", "Home")",
+                    type: 'POST',
+                    cache: false,
+                    data: { __RequestVerificationToken: requestVerificationToken },
+                    success: function (result) {
+                        // Fixed Telephony Service
+                        if ($('#FixedTelephonyServiceId').length) {
+                            var FixedTelephonyServiceEntity = Highcharts.chart('FixedTelephonyServiceId', {
+                                chart: {
+                                    type: 'pie',
+                                    //width: 500,
+                                    //height: 400,
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                    }
+                                },
+                                title: {
+                                    text: '@T("Admin.Year") : ' + result.year + ' , ' + '@T("Admin.Q") : ' + result.q
+                                },
+                                legend: {
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    rtl: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '16px',
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                        textAlign: 'center'
+                                    },
+                                    enabled: true,
+                                    verticalAlign: 'bottom',
+                                    align: 'center',
+                                    layout: 'horizontal',
+
+                                },
+                                plotOptions: {
+                                    series: {
+                                        borderWidth: 0,
+                                        dataLabels: {
+                                            enabled: true,
+                                            format: '{point.y:.0f} %',
+                                            useHTML: '@T("Admin.IsRtl")',
+                                            style: {
+                                                fontFamily: '@T("Admin.FontStyle")',
+                                                fontSize: '15px',
+                                            }
+                                        },
+                                        showInLegend: true
+                                    }
+                                },
+
+                                tooltip: {
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    rtl: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '16px',
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                        textAlign: 'center'
+                                    },
+                                    //headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                                    pointFormat: '<b>{point.y:.2f}</b>'
+                                },
+
+                                series: [{
+                                    data: result.FinalMarketSharesFixedTelephonyServiceData.data
+                                }],
+                                dataLabels: {
+                                    enabled: false,
+                                    rotation: -90,
+                                    align: 'center',
+                                    format: '{point.y:.0f}', // one decimal
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '13px',
+                                        fontFamily: '@T("Admin.FontStyle")'
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+
+
+                if(@currentUser.UserOperatorId.Value == 0 || @currentUser.UserOperatorId.Value ==  11
+                || @currentUser.UserOperatorId.Value == 12 || @currentUser.UserOperatorId.Value == 13){
+                    // MobileBraodbandSubscriptions
+                    $.ajax({
+                        url: "@Url.Action("MobileBraodbandSubscriptionsChart", "Home")",
+                        type: 'POST',
+                        cache: false,
+                        data: { __RequestVerificationToken: requestVerificationToken },
+                        success: function (result) {
+                            if ($('#MobileBraodbandSubscriptionsId').length) {
+                                var MobileBraodbandSubscriptionsIdEntity = Highcharts.chart('MobileBraodbandSubscriptionsId', {
+                                    chart: {
+                                        type: 'pie',
+                                        //width: 500,
+                                        //height: 400,
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                        }
+                                    },
+                                    title: {
+                                        text: '@T("Admin.Year") : ' + result.FinalMobileBraodbandSubscriptionsData.data[0].Year + ' , '
+                                                                + '@T("Admin.Q") : ' + result.FinalMobileBraodbandSubscriptionsData.data[0].Q
+                                    },
+                                    legend: {
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontSize: '16px',
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                            textAlign: 'center'
+                                        },
+                                        enabled: true,
+                                        verticalAlign: 'bottom',
+                                        align: 'center',
+                                        layout: 'horizontal',
+
+                                    },
+                                    plotOptions: {
+                                        series: {
+                                            borderWidth: 0,
+                                            dataLabels: {
+                                                enabled: true,
+                                                format: '{point.y:,.0f}',
+                                                useHTML: '@T("Admin.IsRtl")',
+                                                style: {
+                                                    fontFamily: '@T("Admin.FontStyle")',
+                                                    fontSize: '15px',
+                                                }
+                                            },
+                                            showInLegend: true
+                                        }
+                                    },
+
+                                    tooltip: {
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontSize: '16px',
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                            textAlign: 'center'
+                                        },
+                                        //headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                                        pointFormat: '<b>{point.y:,.0f}</b>'
+                                    },
+
+                                    series: [{
+                                        data: result.FinalMobileBraodbandSubscriptionsData.data
+                                    }],
+                                    responsive: {
+                                        rules: [{
+                                            condition: {
+                                                maxWidth: 900
+                                            },
+                                            chartOptions: {
+                                                legend: {
+                                                    align: 'center',
+                                                    verticalAlign: 'bottom',
+                                                    layout: 'horizontal'
+                                                },
+                                                yAxis: {
+                                                    labels: {
+                                                        align: 'left',
+                                                        x: 0,
+                                                        y: -5
+                                                    },
+                                                    title: {
+                                                        text: null
+                                                    }
+                                                },
+                                                subtitle: {
+                                                    text: null
+                                                },
+                                                credits: {
+                                                    enabled: false
+                                                }
+                                            }
+                                        }]
+                                    },
+                                    dataLabels: {
+                                        enabled: false,
+                                        rotation: -90,
+                                        align: 'center',
+                                        format: '{point.y:.0f}', // one decimal
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontSize: '13px',
+                                            fontFamily: '@T("Admin.FontStyle")'
+                                        }
+                                    }
+                                });
+
+                            }
+                        }
+                    });
+                }
+
+                // StandardMobileService
+                $.ajax({
+                    url: "@Url.Action("MarketSharesChart", "Home")",
+                    type: 'POST',
+                    cache: false,
+                    data: { ServiceId: 1, __RequestVerificationToken: requestVerificationToken },
+                    success: function (result) {
+                        // Standard Mobile Service
+                        if ($('#StandardMobileServiceId').length) {
+                            var StandardMobileServiceEntity = Highcharts.chart('StandardMobileServiceId', {
+                                chart: {
+                                    type: 'pie',
+                                    //width: 500,
+                                    //height: 400,
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                    }
+                                },
+                                title: {
+                                    text: '@T("Admin.Year") : ' + result.year + ' , ' + '@T("Admin.Q") : ' + result.q
+                                },
+                                legend: {
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    rtl: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '16px',
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                        textAlign: 'center'
+                                    },
+                                    enabled: true,
+                                    verticalAlign: 'bottom',
+                                    align: 'center',
+                                    layout: 'horizontal',
+
+                                },
+                                plotOptions: {
+                                    series: {
+                                        borderWidth: 0,
+                                        dataLabels: {
+                                            enabled: true,
+                                            format: '{point.y:.0f} %',
+                                            useHTML: '@T("Admin.IsRtl")',
+                                            style: {
+                                                fontFamily: '@T("Admin.FontStyle")',
+                                                fontSize: '15px',
+                                            }
+                                        },
+                                        showInLegend: true
+                                    }
+                                },
+
+                                tooltip: {
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    rtl: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '16px',
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                        textAlign: 'center'
+                                    },
+                                    //headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                                    pointFormat: '<b>{point.y:.2f}</b>'
+                                },
+
+                                series: [{
+                                    data: result.FinalMarketSharesChartData.data
+                                }],
+                                dataLabels: {
+                                    enabled: false,
+                                    rotation: -90,
+                                    align: 'center',
+                                    format: '{point.y:.0f}', // one decimal
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '13px',
+                                        fontFamily: '@T("Admin.FontStyle")'
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+
+
+                $.ajax({
+                    url: "@Url.Action("MarketSharesChart", "Home")",
+                    type: 'POST',
+                    cache: false,
+                    data: { ServiceId: 2, __RequestVerificationToken: requestVerificationToken },
+                    success: function (result) {
+                        // Dedicated Mobile Service
+                        if ($('#DedicatedMobileServiceId').length) {
+                            var DedicatedMobileServiceIdEntity = Highcharts.chart('DedicatedMobileServiceId', {
+                                chart: {
+                                    type: 'pie',
+                                    //width: 500,
+                                    //height: 400,
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                    }
+                                },
+                                title: {
+                                    text: '@T("Admin.Year") : ' + result.year + ' , ' + '@T("Admin.Q") : ' + result.q
+                                },
+                                legend: {
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    rtl: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '16px',
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                        textAlign: 'center'
+                                    },
+                                    enabled: true,
+                                    verticalAlign: 'bottom',
+                                    align: 'center',
+                                    layout: 'horizontal',
+
+                                },
+                                plotOptions: {
+                                    series: {
+                                        borderWidth: 0,
+                                        dataLabels: {
+                                            enabled: true,
+                                            format: '{point.y:.0f} %',
+                                            useHTML: '@T("Admin.IsRtl")',
+                                            style: {
+                                                fontFamily: '@T("Admin.FontStyle")',
+                                                fontSize: '15px',
+                                            }
+                                        },
+                                        showInLegend: true
+                                    }
+                                },
+
+                                tooltip: {
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    rtl: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '16px',
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                        textAlign: 'center'
+                                    },
+                                    //headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                                    pointFormat: '<b>{point.y:.2f}</b>'
+                                },
+
+                                series: [{
+                                    data: result.FinalMarketSharesChartData.data
+                                }],
+                                dataLabels: {
+                                    enabled: false,
+                                    rotation: -90,
+                                    align: 'center',
+                                    format: '{point.y:.0f}', // one decimal
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '13px',
+                                        fontFamily: '@T("Admin.FontStyle")'
+                                    }
+                                }
+                            });
+
+                        }
+                    }
+                });
+
+                $.ajax({
+                    url: "@Url.Action("MarketSharesChart", "Home")",
+                    type: 'POST',
+                    cache: false,
+                    data: { ServiceId: 3, __RequestVerificationToken: requestVerificationToken },
+                    success: function (result) {
+                        //  Fixed Broadband Service
+                        if ($('#FixedBroadbandServiceId').length) {
+                            var FixedBroadbandServiceIdEntity = Highcharts.chart('FixedBroadbandServiceId', {
+                                chart: {
+                                    type: 'pie',
+                                    //width: 500,
+                                    //height: 400,
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                    }
+                                },
+                                title: {
+                                    text: '@T("Admin.Year") : ' + result.year + ' , ' + '@T("Admin.Q") : ' + result.q
+                                },
+                                legend: {
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    rtl: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '16px',
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                        textAlign: 'center'
+                                    },
+                                    enabled: true,
+                                    verticalAlign: 'bottom',
+                                    align: 'center',
+                                    layout: 'horizontal',
+
+                                },
+                                plotOptions: {
+                                    series: {
+                                        borderWidth: 0,
+                                        dataLabels: {
+                                            enabled: true,
+                                            format: '{point.y:.0f} %',
+                                            useHTML: '@T("Admin.IsRtl")',
+                                            style: {
+                                                fontFamily: '@T("Admin.FontStyle")',
+                                                fontSize: '15px',
+                                            }
+                                        },
+                                        showInLegend: true
+                                    }
+                                },
+
+                                tooltip: {
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    rtl: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '16px',
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                        textAlign: 'center'
+                                    },
+                                    //headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                                    pointFormat: '<b>{point.y:.2f}</b>'
+                                },
+
+                                series: [{
+                                    data: result.FinalMarketSharesChartData.data
+                                }],
+                                dataLabels: {
+                                    enabled: false,
+                                    rotation: -90,
+                                    align: 'center',
+                                    format: '{point.y:.0f}', // one decimal
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '13px',
+                                        fontFamily: '@T("Admin.FontStyle")'
+                                    }
+                                }
+                            });
+
+                        }
+                    }
+                });
+
+                $.ajax({
+                    url: "@Url.Action("MarketSharesChart", "Home")",
+                    type: 'POST',
+                    cache: false,
+                    data: { ServiceId: 4, __RequestVerificationToken: requestVerificationToken },
+                    success: function (result) {
+
+                        // FTTH
+                        if ($('#FTTHId').length) {
+                            var FTTHIdEntity = Highcharts.chart('FTTHId', {
+                                chart: {
+                                    type: 'pie',
+                                    //width: 500,
+                                    //height: 400,
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                    }
+                                },
+                                title: {
+                                    text: '@T("Admin.Year") : ' + result.year + ' , ' + '@T("Admin.Q") : ' + result.q
+                                },
+                                legend: {
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    rtl: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '16px',
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                        textAlign: 'center'
+                                    },
+                                    enabled: true,
+                                    verticalAlign: 'bottom',
+                                    align: 'center',
+                                    layout: 'horizontal',
+
+                                },
+                                plotOptions: {
+                                    series: {
+                                        borderWidth: 0,
+                                        dataLabels: {
+                                            enabled: true,
+                                            format: '{point.y:.0f} %',
+                                            useHTML: '@T("Admin.IsRtl")',
+                                            style: {
+                                                fontFamily: '@T("Admin.FontStyle")',
+                                                fontSize: '15px',
+                                            }
+                                        },
+                                        showInLegend: true
+                                    }
+                                },
+
+                                tooltip: {
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    rtl: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '16px',
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                        textAlign: 'center'
+                                    },
+                                    //headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                                    pointFormat: '<b>{point.y:.2f}</b>'
+                                },
+
+                                series: [{
+                                    data: result.FinalMarketSharesChartData.data
+                                }],
+                                dataLabels: {
+                                    enabled: false,
+                                    rotation: -90,
+                                    align: 'center',
+                                    format: '{point.y:.0f}', // one decimal
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '13px',
+                                        fontFamily: '@T("Admin.FontStyle")'
+                                    }
+                                }
+                            });
+
+                        }
+                    }
+                });
+
+                // ModernInterfaceLeasesLine
+                $.ajax({
+                    url: "@Url.Action("MarketSharesChart", "Home")",
+                    type: 'POST',
+                    cache: false,
+                    data: { ServiceId: 5, __RequestVerificationToken: requestVerificationToken },
+                    success: function (result) {
+                        //
+                        if ($('#ModernInterfaceLeasesLineId').length) {
+                            var ModernInterfaceLeasesLineIdEntity = Highcharts.chart('ModernInterfaceLeasesLineId', {
+                                chart: {
+                                    type: 'pie',
+                                    //width: 500,
+                                    //height: 400,
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                    }
+                                },
+                                title: {
+                                    text: '@T("Admin.Year") : ' + result.year + ' , ' + '@T("Admin.Q") : ' + result.q
+                                },
+                                legend: {
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    rtl: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '16px',
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                        textAlign: 'center'
+                                    },
+                                    enabled: true,
+                                    verticalAlign: 'bottom',
+                                    align: 'center',
+                                    layout: 'horizontal',
+
+                                },
+                                plotOptions: {
+                                    series: {
+                                        borderWidth: 0,
+                                        dataLabels: {
+                                            enabled: true,
+                                            format: '{point.y:.0f} %',
+                                            useHTML: '@T("Admin.IsRtl")',
+                                            style: {
+                                                fontFamily: '@T("Admin.FontStyle")',
+                                                fontSize: '15px',
+                                            }
+                                        },
+                                        showInLegend: true
+                                    }
+                                },
+
+                                tooltip: {
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    rtl: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '16px',
+                                        fontFamily: '@T("Admin.FontStyle")',
+                                        textAlign: 'center'
+                                    },
+                                    //headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                                    pointFormat: '<b>{point.y:.2f}</b>'
+                                },
+
+                                series: [{
+                                    data: result.FinalMarketSharesChartData.data
+                                }],
+                                dataLabels: {
+                                    enabled: false,
+                                    rotation: -90,
+                                    align: 'center',
+                                    format: '{point.y:.0f}', // one decimal
+                                    useHTML: '@T("Admin.IsRtl")',
+                                    style: {
+                                        fontSize: '13px',
+                                        fontFamily: '@T("Admin.FontStyle")'
+                                    }
+                                }
+                            });
+
+                        }
+                    }
+                });
+
+
+                if(@currentUser.UserOperatorId.Value == 0 || @currentUser.UserOperatorId.Value == 11
+                  || @currentUser.UserOperatorId.Value == 12 ||@currentUser.UserOperatorId.Value == 13){
+                    // أعداد مشتركي الهاتف المتنقل الدفع اللاحق / المسبق
+                    $.ajax({
+                        url: "@Url.Action("MobilePhoneSubscriberSetupPrepaidOrPostpaid", "Home")",
+                        type: 'POST',
+                        cache: false,
+                        data: { __RequestVerificationToken: requestVerificationToken },
+                        success: function (result) {
+                            if ($('#PrepaidOrPostpaid').length) {
+                                var PrepaidOrPostpaidEntity = Highcharts.chart('PrepaidOrPostpaid', {
+                                    chart: {
+                                        type: 'column',
+
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                        }
+                                    },
+                                    title: {
+                                        text: ''
+                                    },
+                                    xAxis: {
+                                        type: 'category',
+                                        //categories: ['2018', '2019', '2020'],
+                                        //crosshair: true
+                                    },
+                                    yAxis: {
+                                        min: 0,
+                                        title: {
+                                            text: '@T("Admin.MobilePhoneSubscriberSetup")'
+                                        }
+                                    },
+                                    legend: {
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontSize: '15px',
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                            textAlign: 'center'
+                                        },
+                                        enabled: true,
+                                        verticalAlign: 'bottom',
+                                        align: 'center',
+                                        layout: 'horizontal',
+
+                                    },
+                                    tooltip: {
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        enabled: true,
+                                        //headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                                        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}:</td>' +
+                                            '<td style="padding:0"><b>{point.y:,.0f}  </b></td></tr></br>',
+                                        footerFormat: '</table>',
+                                        shared: true,
+                                        useHTML: true
+                                    },
+                                    plotOptions: {
+                                        series: {
+                                            borderWidth: 0,
+                                            dataLabels: {
+                                                enabled: true,
+                                                //format: '{point.y:,.0f}',
+                                                formatter: function () {
+                                                    if ((this.y + "").length >= 4)
+                                                        return Math.round(this.y / 1000) + 'K';
+                                                    else
+                                                        return Math.round(this.y);
+                                                },
+                                                useHTML: '@T("Admin.IsRtl")',
+                                                style: {
+                                                    fontFamily: '@T("Admin.FontStyle")',
+                                                    fontSize: '15px',
+                                                }
+                                            }
+                                        }
+                                    },
+                                    series: result.finalDataPreOrPost.totalCountPerYearSeries,
+                                    responsive: {
+                                        rules: [{
+                                            condition: {
+                                                maxWidth: 900
+                                            },
+                                            chartOptions: {
+                                                legend: {
+                                                    align: 'center',
+                                                    verticalAlign: 'bottom',
+                                                    layout: 'horizontal'
+                                                },
+                                                yAxis: {
+                                                    labels: {
+                                                        align: 'left',
+                                                        x: 0,
+                                                        y: -5
+                                                    },
+                                                    title: {
+                                                        text: null
+                                                    }
+                                                },
+                                                subtitle: {
+                                                    text: null
+                                                },
+                                                credits: {
+                                                    enabled: false
+                                                }
+                                            }
+                                        }]
+                                    },
+                                    drilldown: {
+                                        series: result.finalDataPreOrPost.tolCountPerQuarterDrillDown
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+
+                if(@currentUser.UserOperatorId.Value == 0){
+                    // الإنترنت عريض النطاق الثابت / المتنقل
+                    $.ajax({
+                        url: "@Url.Action("BroadbandInternetChart", "Home")",
+                        type: 'POST',
+                        cache: false,
+                        data: { __RequestVerificationToken: requestVerificationToken },
+                        success: function (result) {
+
+                            if ($('#BroadbandInternet').length) {
+                                var BroadbandInternetEntity = Highcharts.chart('BroadbandInternet', {
+                                    lang: {
+                                        thousandsSep: ','
+                                    },
+                                    chart: {
+                                        type: 'column',
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                        }
+                                    },
+                                    title: {
+                                        text: ''
+                                    },
+                                    xAxis: {
+                                        type: 'category',
+                                        //categories: ['2018', '2019', '2020'],
+                                        //crosshair: true
+                                    },
+                                    yAxis: {
+                                        min: 0,
+                                        title: {
+                                            text: '@T("Admin.MobilePhoneSubscriberSetup")'
+                                        }
+                                    },
+                                    legend: {
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontSize: '15px',
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                            textAlign: 'center'
+                                        },
+                                        enabled: true,
+                                        verticalAlign: 'bottom',
+                                        align: 'center',
+                                        layout: 'horizontal',
+
+                                    },
+                                    tooltip: {
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        enabled: true,
+                                        //headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                                        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}:</td>' +
+                                            '<td style="padding:0"><b>{point.y:,.f}  </b></td></tr></br>',
+                                        footerFormat: '</table>',
+                                        positioner: function (boxWidth, boxHeight, point) {
+                                            return { x: point.plotX + 20, y: point.plotY };
+                                        },
+                                        shared: true,
+                                        useHTML: true
+                                    },
+                                    plotOptions: {
+                                        series: {
+                                            borderWidth: 0,
+                                            dataLabels: {
+                                                enabled: true,
+                                                //format: '{point.y:,.0f}',
+                                                formatter: function () {
+                                                    if ((this.y + "").length >= 4)
+                                                        return Math.round(this.y / 1000) + 'K';
+                                                    else
+                                                        return Math.round(this.y);
+                                                },
+                                                useHTML: '@T("Admin.IsRtl")',
+                                                style: {
+                                                    fontFamily: '@T("Admin.FontStyle")',
+                                                    fontSize: '15px',
+                                                    textDecoration: 'none'
+                                                }
+                                            }
+                                        }
+                                    },
+                                    series: result.finalDataFixedOrMobile.SeriesPerYear,
+                                    responsive: {
+                                        rules: [{
+                                            condition: {
+                                                maxWidth: 900
+                                            },
+                                            theme: {
+                                                fill: 'url(#arrow)',
+                                                'stroke-width': 1,
+                                                stroke: 'silver',
+                                                r: 0,
+                                                states: {
+                                                    hover: {
+                                                        fill: 'url(#coloured-arrow)',
+                                                    }
+                                                }
+                                            }
+                                        }]
+                                    },
+                                    drilldown: {
+                                        series: result.finalDataFixedOrMobile.DrillDownPerQ
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+
+                if(@currentUser.UserOperatorId.Value == 0 || @currentUser.UserOperatorId.Value == 11
+                || @currentUser.UserOperatorId.Value ==12 || @currentUser.UserOperatorId.Value ==13)
+                    //Internet Subscribers
+                    $.ajax({
+                        url: "@Url.Action("SettingUpInternetSubscribersChart", "Home")",
+                        type: 'POST',
+                        cache: false,
+                        data: { __RequestVerificationToken: requestVerificationToken },
+                        success: function (result) {
+                            if ($('#InternetSubscribersColumn').length) {
+                                var SettingUpInternetSubscribersChartEntity = Highcharts.chart('InternetSubscribersColumn', {
+                                    chart: {
+                                        type: 'column',
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                        }
+                                    },
+                                    title: {
+                                        text: ''
+                                    },
+                                    xAxis: {
+                                        type: 'category'
+                                    },
+                                    yAxis: {
+                                        min: 0,
+                                        title: {
+                                            text: '@T("Admin.MobilePhoneSubscriberSetup")'
+                                        }
+                                    },
+                                    legend: {
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontSize: '16px',
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                            textAlign: 'center',
+                                            pointFormat: '{series.name}'
+                                        },
+                                        enabled: true,
+                                        verticalAlign: 'bottom',
+                                        align: 'center',
+                                        layout: 'horizontal',
+
+                                    },
+                                    tooltip: {
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        enabled: true,
+                                        //headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                                        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}:</td>' +
+                                            '<td style="padding:0"><b>{point.y:,.0f}  </b></td></tr></br>',
+                                        footerFormat: '</table>',
+                                        shared: true,
+                                        useHTML: true
+                                    },
+                                    plotOptions: {
+                                        column: {
+                                            stacking: 'normal'
+                                        }
+                                    },
+                                    series: result.finalDataOfInternetSubscribers.TotalOf3GAnd4GPerYear,
+                                    responsive: {
+                                        rules: [{
+                                            condition: {
+                                                maxWidth: 900
+                                            },
+                                            chartOptions: {
+                                                legend: {
+                                                    align: 'center',
+                                                    verticalAlign: 'bottom',
+                                                    layout: 'horizontal'
+                                                },
+                                                yAxis: {
+                                                    labels: {
+                                                        align: 'left',
+                                                        x: 0,
+                                                        y: -5
+                                                    },
+                                                    title: {
+                                                        text: null
+                                                    }
+                                                },
+                                                subtitle: {
+                                                    text: null
+                                                },
+                                                credits: {
+                                                    enabled: false
+                                                }
+                                            }
+                                        }]
+                                    },
+                                    drilldown: {
+                                        series: result.finalDataOfInternetSubscribers.TotalOf3GAnd4GPerQuarterAndOperator
+                                    }
+                                });
+                            }
+                        }
+                    });
+
+                if(@currentUser.UserOperatorId.Value == 0){
+                    // نسبة الانتشار للخدمات
+                    $.ajax({
+                        url: "@Url.Action("PrevalenceRatioChart", "Home")",
+                        type: 'POST',
+                        cache: false,
+                        data: { __RequestVerificationToken: requestVerificationToken },
+                        success: function (result) {
+                            if ($('#PercentageOfSpread').length) {
+                                var PercentageOfSpreadEntity = Highcharts.chart('PercentageOfSpread', {
+                                    chart: {
+                                        type: 'column',
+
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                        }
+                                    },
+                                    title: {
+                                        text: '@T("Admin.Year") : ' + result.finalDataOfPrevalenceRatioChart.data[0].Year + ' , '
+                                             + '@T("Admin.Q") : ' + result.finalDataOfPrevalenceRatioChart.data[0].Q
+                                    },
+                                    xAxis: {
+                                        type: 'category',
+                                        labels: {
+                                            rotation: -45,
+                                            useHTML: '@T("Admin.IsRtl")',
+                                            style: {
+                                                fontSize: '13px',
+                                                fontFamily: '@T("Admin.FontStyle")',
+                                            }
+                                        }
+                                    },
+                                    yAxis: {
+                                        min: 0,
+                                        title: {
+                                            text: '@T("Admin.PrevalenceRatio")'
+                                        }
+                                    },
+                                    legend: {
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontSize: '16px',
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                            textAlign: 'center'
+                                        },
+                                        enabled: true,
+                                        verticalAlign: 'bottom',
+                                        align: 'center',
+                                        layout: 'horizontal',
+
+                                    },
+                                    plotOptions: {
+                                        series: {
+                                            borderWidth: 0,
+                                            dataLabels: {
+                                                enabled: true,
+                                                format: '% {point.y:.2f}',
+                                                useHTML: '@T("Admin.IsRtl")',
+                                                style: {
+                                                    fontFamily: '@T("Admin.FontStyle")',
+                                                    fontSize: '15px',
+                                                }
+                                            }
+                                        }
+                                    },
+                                    tooltip: {
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        enabled: false,
+                                        style: {
+                                            fontSize: '16px',
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                            textAlign: 'center'
+                                        },
+                                        headerFormat: '',
+                                        pointFormat: '<span>{point.name}</span>: <b>{point.y:.0f}',
+                                    },
+                                    series: [{
+                                        name: '@T("Admin.Service")',
+                                        colorByPoint: true,
+                                        data: result.finalDataOfPrevalenceRatioChart.data
+                                    }
+                                    ],
+                                    responsive: {
+                                        rules: [{
+                                            condition: {
+                                                maxWidth: 1300
+                                            },
+                                            chartOptions: {
+                                                legend: {
+                                                    align: 'center',
+                                                    verticalAlign: 'bottom',
+                                                    layout: 'horizontal'
+                                                },
+                                                yAxis: {
+                                                    labels: {
+                                                        align: 'left',
+                                                        x: 0,
+                                                        y: -5
+                                                    },
+                                                    title: {
+                                                        text: null
+                                                    }
+                                                },
+                                                subtitle: {
+                                                    text: null
+                                                },
+                                                credits: {
+                                                    enabled: false
+                                                }
+                                            }
+                                        }]
+                                    },
+                                    dataLabels: {
+                                        enabled: true,
+                                        rotation: -90,
+                                        align: 'center',
+                                        format: '{point.y:.2f}', // one decimal
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontSize: '13px',
+                                            fontFamily: '@T("Admin.FontStyle")'
+                                        }
+                                    }
+                                    //},
+                                    //drilldown: {
+                                    //    series: result.finalDataOfPrevalenceRatioChart.DrillDown
+                                    //}
+                                });
+                            }
+                        }
+                    });
+                }
+
+                if(@currentUser.UserOperatorId.Value  == 0){
+                    // حجم الايرادات
+                    $.ajax({
+                        url: "@Url.Action("RevenueVolumeChart", "Home")",
+                        type: 'POST',
+                        cache: false,
+                        data: { __RequestVerificationToken: requestVerificationToken },
+                        success: function (result) {
+                            if ($('#RevenueVolume').length) {
+                                var RevenueVolumeChartEntity = Highcharts.chart('RevenueVolume', {
+                                    chart: {
+                                        type: 'column',
+
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                        }
+                                    },
+                                    title: {
+                                        text: ''
+                                    },
+                                    subtitle: {
+                                        text: ''
+                                    },
+                                    xAxis: {
+                                        type: 'category',
+                                        labels: {
+                                            rotation: -45,
+                                            useHTML: '@T("Admin.IsRtl")',
+                                            style: {
+                                                fontSize: '13px',
+                                                fontFamily: '@T("Admin.FontStyle")',
+                                            }
+                                        }
+                                    },
+                                    yAxis: {
+                                        min: 0,
+                                        title: {
+                                            text: '@T("Admin.RevenueVolume")' + ' in JD',
+                                        }
+
+                                    },
+                                    legend: {
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        style: {
+                                            fontSize: '16px',
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                            textAlign: 'center'
+                                        },
+                                        enabled: true,
+                                        verticalAlign: 'bottom',
+                                        align: 'center',
+                                        layout: 'horizontal',
+
+                                    },
+                                    plotOptions: {
+                                        series: {
+                                            borderWidth: 0,
+                                            dataLabels: {
+                                                enabled: true,
+                                                //format: '{point.y:,.1f}',
+                                                formatter: function () {
+                                                    if ((this.y + "").length >= 7)
+                                                        return Math.round(this.y / 1000000) + 'M';
+                                                    else if ((this.y + "").length >= 4)
+                                                        return Math.round(this.y / 1000) + 'K';
+                                                    else
+                                                        return Math.round(this.y);
+                                                },
+                                                useHTML: '@T("Admin.IsRtl")',
+                                                style: {
+                                                    fontFamily: '@T("Admin.FontStyle")',
+                                                    fontSize: '15px',
+                                                }
+                                            }
+                                        }
+                                    },
+
+                                    tooltip: {
+                                        useHTML: '@T("Admin.IsRtl")',
+                                        rtl: '@T("Admin.IsRtl")',
+                                        enabled: true,
+                                        style: {
+                                            fontSize: '16px',
+                                            fontFamily: '@T("Admin.FontStyle")',
+                                            textAlign: 'center'
+                                        },
+                                        headerFormat: '',
+                                        pointFormat: '<span>{point.name}</span>: <b>{point.y:,.0f}',
+                                    },
+                                    series: [
+                                      {
+                                          name: '@T("Admin.Year")',
+                                          colorByPoint: true,
+                                          data: result.finalRevenueVolumeData.revenueVolumeData,
+                                          //dataLabels: {
+                                          //    enabled: true,
+                                          //    rotation: -90,
+                                          //    color: '#FFFFFF',
+                                          //    align: 'right',
+                                          //    format: '{point.y:.1f}', // one decimal
+                                          //    y: 20, // 10 pixels down from the top
+                                          //    style: {
+                                          //        fontSize: '13px',
+                                          //        fontFamily: 'Verdana, sans-serif'
+                                          //    }
+                                          //}
+                                      }
+                                    ],
+                                    responsive: {
+                                        rules: [{
+                                            condition: {
+                                                maxWidth: 900
+                                            },
+                                            chartOptions: {
+                                                legend: {
+                                                    align: 'center',
+                                                    verticalAlign: 'bottom',
+                                                    layout: 'horizontal'
+                                                },
+                                                yAxis: {
+                                                    labels: {
+                                                        align: 'left',
+                                                        x: 0,
+                                                        y: -5
+                                                    },
+                                                    title: {
+                                                        text: null
+                                                    }
+                                                },
+                                                subtitle: {
+                                                    text: null
+                                                },
+                                                credits: {
+                                                    enabled: false
+                                                }
+                                            }
+                                        }]
+                                    },
+                                    @*dataLabels: {
+                                enabled: true,
+                                rotation: -90,
+                                align: 'center',
+                                format: '{point.y:.1f}', // one decimal
+                                useHTML: '@T("Admin.IsRtl")',
+                                style: {
+                                    fontSize: '13px',
+                                    fontFamily: '@T("Admin.FontStyle")'
+                                }
+                            },*@
+                                    drilldown: {
+                                        drillUpButton: {
+                                            position: {
+                                                verticalAlign: 'top',
+                                                align: 'center',
+                                            }
+                                        },
+                                        series: result.finalRevenueVolumeData.revenueVolumeDrillDown
+                                    }
+                                });
+                            }
+
+                            Highcharts.setOptions({
+                                lang: {
+                                    thousandsSep: ','
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $(".QuarterlyKpisBtn").click();
+        });
+        var app = SeagullApp.controller('QuarterlyPerformanceIndicatorsCtrl', function ($scope, $filter, $http, $timeout, $rootScope) {
+
+            $scope.QuarterlyPerformanceIndicatorsPrint = function () {
+                var divToPrint = document.getElementById('QuarterlyPerformanceIndicatorsViewbody');
+
+                var newWin = window.open('', 'Print-Window');
+                newWin.document.open();
+                var y = '</scr' + 'ipt>';
+                var onload = ""; //'<script>$(document).ready(function(){window.print()});' + y + '';
+                var scripts = '<link href="@Url.Content("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css")" rel="stylesheet" />';
+                scripts += '<link href="@Url.Content("~/Administration/Content/styles.rtl.css")" rel="stylesheet" />';
+                scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css")" rel="stylesheet" />';
+                scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css")" rel="stylesheet" />';
+                //scripts += '<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">' + y + '';
+                var page = scripts + onload + '<html><body style ="direction: rtl;"  onload="window.print()">' + divToPrint.innerHTML + '</body></html>'
+                newWin.document.write(page);
+                newWin.document.close();
+                //settimeout(function () { newwin.close(); }, 10);
+            }
+
+            $scope.QuarterlyPerformanceIndicatorsSearch = function (canprint, type) {
+
+                var _urlQuarterlyPerformanceIndicators = buildSearchCriteriaUrlDynamicForReport('/Admin/Home/QuarterlyPerformanceIndicators', false, false, $scope, "", []);
+
+                $scope.SearchPrint = function (tableName, type) {
+                    window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/Home/QuarterlyPerformanceIndicators', true, false, $scope, "", $('#jqGridQuarterlyPerformanceIndicators').getGridParam("postData"));
+                    return;
+                }
+
+                $scope.SearchPrintPdf = function (tableName, type) {
+                    window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/Home/QuarterlyPerformanceIndicators', false, true, $scope, "", $('#jqGridQuarterlyPerformanceIndicators').getGridParam("postData"));
+                    return;
+                }
+
+
+                var model =
+                    [
+                        { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.QuarterlyPerformanceIndicators.IndicatorName")', name: 'IndicatorName', align: "center" },
+                    ];
+
+                var d= new Date();
+                var year =  parseInt( d.getFullYear() )- 1;
+                var Qs = "1,2,3,4"
+                var QuarterCount = Qs.split(",");
+                angular.forEach(QuarterCount, function (valueQ, keyQ) {
+                    if (valueQ != "") {
+                        jsonObj = {};
+                        jsonObj["label"] = getResources(parseInt(valueQ), parseInt(year), "ar");
+                        jsonObj["name"] = valueQ + "_" + year;
+                        jsonObj["align"] = "center";
+                        model.push(jsonObj)
+                    }
+                });
+
+                subGridTable = "GridQuarterlyPerformanceIndicators";
+                BuildReportDiv("QuarterlyPerformanceIndicatorsView", "jqGridQuarterlyPerformanceIndicators", "jqGridQuarterlyPerformanceIndicatorsPager");
+                buildGrid(model, "jqGridQuarterlyPerformanceIndicators", _urlQuarterlyPerformanceIndicators, '@int.MaxValue', "jqGridQuarterlyPerformanceIndicatorsPager",
+                false, false, false, false, true, false, "rtl", false, "tab-content", "POST", 0, null, "QuarterlyPerformanceIndicatorsSearchButtons**SearchPrint('jqGridQuarterlyPerformanceIndicators', 1)","QuarterlyPerformanceIndicatorsSearchButtons**SearchPrintPdf('jqGridQuarterlyPerformanceIndicators', 1)")
+            }
+        });
+        function getResources(quarter, year, lang) {
+            var strQuarter = "الربع"
+            switch (lang) {
+                case "ar":
+                    switch (quarter) {
+                        case 1:
+                            return "الربع الاول لسنة " + " " + year;
+                            break;
+                        case 2:
+                            return "الربع الثاني لسنة " + " " + year;
+                            break;
+                        case 3:
+                            return "الربع الثالث لسنة " + " " + year;
+                            break;
+                        case 4:
+                            return "الربع الرابع لسنة " + " " + year;
+                            break;
+                        case 5:
+                            return "القيمةالسنوية لسنة" + " " + year;
+                            break;
+                    }
+                    break;
+                case "en":
+                    switch (quarter) {
+                        case 1:
+                            return "Quarter One " + " " + year;
+                            break;
+                        case 2:
+                            return "Quarter Two" + " " + year;
+                            break;
+                        case 3:
+                            return "Quarter Three" + " " + year;
+                            break;
+                        case 4:
+                            return "Quarter Four" + " " + year;
+                            break;
+                        case 5:
+                            return "Annual" + " " + year;
+                            break;
+                    }
+                    break;
+            }
+        }
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $(".AnnualKpisBtn").click();
+        });
+        var app = SeagullApp.controller('AnnualPerformanceIndicatorsCtrl', function ($scope, $filter, $http, $timeout, $rootScope) {
+
+            $scope.AnnualPerformanceIndicatorsPrint = function () {
+                var divToPrint = document.getElementById('AnnualPerformanceIndicatorsView');
+
+                var newWin = window.open('', 'Print-Window');
+
+                newWin.document.open();
+                var y = '</scr' + 'ipt>';
+                var onload = ""; //'<script>$(document).ready(function(){window.print()});' + y + '';
+                var scripts = '<link href="@Url.Content("~/Administration/Content/bootstrap/css/bootstrap.min.rtl.css")" rel="stylesheet" />';
+                scripts += '<link href="@Url.Content("~/Administration/Content/styles.rtl.css")" rel="stylesheet" />';
+                scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/AdminLTE-2.3.0.min.rtl.css")" rel="stylesheet" />';
+                scripts += '<link href="@Url.Content("~/Administration/Content/adminLTE/skins/_all-skins.min.rtl.css")" rel="stylesheet" />';
+                //scripts += '<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">' + y + '';
+
+                var   page = scripts + onload + '<html><body style ="direction: rtl;"  onload="window.print()">' + divToPrint.innerHTML + '</body></html>'
+
+
+                newWin.document.write(page);
+                newWin.document.close();
+                //settimeout(function () { newwin.close(); }, 10);
+            }
+
+            //$scope.SearchPrint = function (tableName, type) {
+            //    window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/Home/AnnualPerformanceIndicators', true, $scope, "", $('#jqGridAnnualPerformanceIndicators').getGridParam("postData"));
+            //    return;
+            //}
+
+            $scope.AnnualPerformanceIndicatorsSearch = function (canprint, type) {
+
+                var _urlAnnualPerformanceIndicators = buildSearchCriteriaUrlDynamicForReport('/Admin/Home/AnnualPerformanceIndicators', false, false, $scope, "", []);
+
+                $scope.SearchPrint = function (tableName, type) {
+                    window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/Home/AnnualPerformanceIndicators', true, false, $scope, "", $('#jqGridAnnualPerformanceIndicators').getGridParam("postData"));
+                    return;
+                }
+
+                $scope.SearchPrintPdf = function (tableName, type) {
+                    window.location = buildSearchCriteriaUrlDynamicForReport('/Admin/Home/AnnualPerformanceIndicators', false, true, $scope, "", $('#jqGridAnnualPerformanceIndicators').getGridParam("postData"));
+                    return;
+                }
+
+                var model =
+
+                    [
+                            { label: '@T("Admin.SystemReport.PerformanceIndicatorsReports.AnnualPerformanceIndicators.IndicatorName")', name: 'IndicatorName', align: "center" },
+                    ];
+
+                var d = new Date();
+                var year =parseInt(d.getFullYear());
+                var yearList = year.toString()  +","+ (year -1).toString()  +","+(year-2).toString()  +","+(year-3).toString();
+                angular.forEach(yearList.split(","), function (valuey, keyy) {
+                    if (valuey != "") {
+                        jsonObj = {};
+                        jsonObj["label"] = valuey;
+                        jsonObj["name"] =  valuey;
+                        jsonObj["align"] = "center";
+                        model.push(jsonObj)
+                    }
+                });
+                subGridTable = "GridAnnualPerformanceIndicators";
+                BuildReportDiv("AnnualPerformanceIndicatorsView", "jqGridAnnualPerformanceIndicators", "jqGridAnnualPerformanceIndicatorsPager");
+                buildGrid(model, "jqGridAnnualPerformanceIndicators", _urlAnnualPerformanceIndicators, '@int.MaxValue', "jqGridAnnualPerformanceIndicatorsPager",
+                false, false, false, false, true, false,"rtl", false, "tab-content", "POST", 0, null, "AnnualPerformanceIndicatorsSearchButtons**SearchPrint('jqGridAnnualPerformanceIndicators', 1)","AnnualPerformanceIndicatorsSearchButtons**SearchPrintPdf('jqGridAnnualPerformanceIndicators', 1)")
+            }
+        });
+
+    </script>

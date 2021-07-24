@@ -1,0 +1,48 @@
+﻿
+   
+
+@model LanguageSelectorModel
+@using Seagull.Core;
+
+@if (Model.AvailableLanguages.Count > 1)
+{
+    <li class="dropdown language-menu" >
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            @*<img src="@Url.Content("~/Content/Images/flags/" + Model.CurrentLanguage.FlagImageFileName)" class="user-image" alt="User Image">*@
+            <span class="hidden-xs">@Model.CurrentLanguage.Name</span>
+        </a>
+
+        @{
+    var webHelper = EngineContext.Current.Resolve<IWebHelper>();
+
+    var languages = Model.AvailableLanguages;
+
+
+    @*@Html.SeagullDropDownList("userlanguage", languages, htmlAttributes: new { onchange = "setLocation(this.value);" })*@
+
+            <ul class="dropdown-menu animated-dropdown-menu">
+                @foreach (var item in languages)
+                {
+                    <li>
+                        @if (item.Id != Model.CurrentLanguage.Id)
+                        {
+                            <a href="@webHelper.ModifyQueryString(Url.Action("SetLanguage", "Common", new { langid = item.Id, area = "Admin" }), "returnurl=" + HttpContext.Current.Request.RawUrl, null)"><img src='@Url.Content("~/Content/Images/flags/")'> @item.Name</a>
+
+                        }
+                        else
+                        {
+                            <a href="#"><img src='@Url.Content("~/Content/Images/flags/" + item.FlagImageFileName)'> @item.Name</a>
+                        }
+
+                    </li>
+                }
+            </ul>
+            <cc id="userlanguage" name="userlanguage" style="display:none">
+            </cc>
+        }
+    </li>
+}
+
+
+
+     

@@ -1,0 +1,16 @@
+﻿@*@{
+    Layout = "~/Views/Shared/_ColumnsOne.cshtml";
+
+    //page class
+    Html.AppendPageCssClassParts("html-home-page");
+}*@
+<div class="page home-page">
+    <div class="page-body">
+        @*@Html.Action("TopicBlock", "Topic", new { systemName = "MainPage" })*@
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        window.location.href = '@Url.Action("GoToIndex", "Home")';
+    });
+</script>

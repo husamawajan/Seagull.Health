@@ -1,0 +1,49 @@
+﻿@model HeaderLinksModel
+@using Seagull.Web.Models.Common;
+    <ul>
+        @*@Html.Widget("header_links_before")*@
+        <li>
+            <a href="@Url.Action("Index","Home")">
+                <i class="fa fa-home fa-2x"></i>
+                <span class="nav-text">
+                    @T("Account.Home")
+                </span>
+            </a>
+        </li>
+       @if (Model.IsAuthenticated)
+       {
+       
+        
+        <li>
+            <a href="@Url.RouteUrl("UserInfo")">
+                <i class="fa fa-user fa-2x"></i>
+                <span class="nav-text">
+                    @T("Account.MyAccount")
+                </span>
+            </a>
+        </li>
+        <li>
+            <a href="@Url.RouteUrl("Logout")">
+                <i class="fa fa-power-off fa-2x"></i>
+                <span class="nav-text">
+                    @T("Account.Logout")
+                </span>
+            </a>
+        </li>
+       }
+       else
+       {
+    <li>
+        <a href="@Url.RouteUrl("Login")">
+            <i class="fa fa-sign-out fa-2x"></i>
+            <span class="nav-text">
+                @T("Account.Login")
+            </span>
+        </a>
+    </li>
+       }
+       
+
+    </ul>
+   
+   

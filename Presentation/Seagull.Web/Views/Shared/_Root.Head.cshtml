@@ -1,0 +1,67 @@
+﻿@using Seagull.Core.Domain;
+@using Seagull.Core.Domain.Common;
+@using Seagull.Core.Domain.Seo
+@using Seagull.Core.Infrastructure;
+@using Seagull.Services.Security;
+
+@{
+    var storeSettings = EngineContext.Current.Resolve<StoreInformationSettings>();
+    var permissionService = EngineContext.Current.Resolve<IPermissionService>();
+    var displayMiniProfiler = storeSettings.DisplayMiniProfilerInPublicStore
+        && (!storeSettings.DisplayMiniProfilerForAdminOnly || permissionService.Authorize(StandardPermissionProvider.AccessAdminPanel));
+
+    Html.AppendScriptParts("~/Scripts/public.ajaxcart.js");
+    Html.AppendScriptParts("~/Scripts/public.common.js");
+    Html.AppendScriptParts("~/Scripts/jquery-migrate-1.2.1.min.js");
+    Html.AppendScriptParts("~/Scripts/jquery-ui-1.10.3.custom.min.js");
+    Html.AppendScriptParts("~/Scripts/jquery.validate.unobtrusive.min.js");
+    Html.AppendScriptParts("~/Scripts/jquery.validate.min.js");
+    Html.AppendScriptParts("~/Scripts/jquery-1.10.2.min.js");
+    Html.AppendCssFileParts("~/Administration/Content/fontAwesome/css/font-awesome-4.6.3.min.css");
+    //X-UA-Compatible tag
+    var commonSettings = EngineContext.Current.Resolve<CommonSettings>();
+    if (commonSettings.RenderXuaCompatible)
+    {
+        Html.AppendHeadCustomParts(string.Format("<meta http-equiv=\"X-UA-Compatible\" content=\"{0}\"/>", commonSettings.XuaCompatibleValue));
+    }
+    //custom tag(s)
+    var seoSettings = EngineContext.Current.Resolve<SeoSettings>();
+    if (!string.IsNullOrEmpty(seoSettings.CustomHeadTags))
+    {
+        Html.AppendHeadCustomParts(seoSettings.CustomHeadTags);
+    }
+}
+<!DOCTYPE html>
+<html@(this.ShouldUseRtlTheme() ? Html.Raw(" dir=\"rtl\"") : null) @Html.SeagullPageCssClasses()>
+<head>
+    <title>@Html.SeagullTitle()</title>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+    <meta name="description" content="@(Html.SeagullMetaDescription())" />
+    <meta name="keywords" content="@(Html.SeagullMetaKeywords())" />
+    <meta name="generator" content="SeagullCommerce" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    @Html.SeagullHeadCustom()
+    @*This is used so that themes can inject content into the header*@
+    @Html.Partial("Head")
+    @Html.Widget("head_html_tag")
+    @Html.SeagullCssFiles(this.Url, ResourceLocation.Head)
+    @Html.SeagullScripts(this.Url, ResourceLocation.Head)
+    @Html.SeagullCanonicalUrls()
+    @*@Html.Action("RssHeaderLink", "News")*@
+    @*@Html.Action("RssHeaderLink", "Blog")*@
+    @*Favicon - upload favicon.ico file to the root directory*@
+    @Html.Action("Favicon", "Common")
+    @if (displayMiniProfiler)
+    {
+        @StackExchange.Profiling.MiniProfiler.RenderIncludes()
+    }
+    <!--Powered by SeagullCommerce - http://www.SeagullCommerce.com-->
+</head>
+<div class="sidebar">@Html.Partial("SideBar")</div>
+
+<body>
+    @RenderBody()
+    @Html.SeagullCssFiles(this.Url, ResourceLocation.Foot)
+    @Html.SeagullScripts(this.Url, ResourceLocation.Foot)
+</body>
+</html>

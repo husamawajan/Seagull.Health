@@ -1,0 +1,21 @@
+@model int
+@{
+    //page title
+    ViewBag.Title = T("Admin.Emails").Text;
+    //active menu item (system name)
+    Html.SetActiveMenuItemSystemName("Email");
+}
+<sg-page title="@T("Admin.Email.AddNew")">
+    <form sg-form name="myform" data-ctrl="Email" data-id="@Model" token="@Html.RequestVerificationToken("Email")" form-controller="null">
+        <sg-form-toolbar save="true" savec="true" savedraft="true" back="true" backtoproject="true"></sg-form-toolbar>
+        <sg-input name="Id" label="@T("Admin.Seagull.TRC.Emails.Fields.Id")" type="text" ng-model="model.Id" ng-required="true"></sg-input>
+        <sg-input name="From" label="@T("Admin.Seagull.TRC.Emails.Fields.From")" type="text" ng-model="model.From" ng-required="true"></sg-input>
+        <sg-input name="To" label="@T("Admin.Seagull.TRC.Emails.Fields.To")" type="text" ng-model="model.To" ng-required="true"></sg-input>
+        <sg-input name="Subject" label="@T("Admin.Seagull.TRC.Emails.Fields.Subject")" type="text" ng-model="model.Subject" ng-required="true"></sg-input>
+        <sg-input name="Msg" label="@T("Admin.Seagull.TRC.Emails.Fields.Msg")" type="text" ng-model="model.Msg" ng-required="true"></sg-input>
+        <sg-input name="EmailDate" label="@T("Admin.Seagull.TRC.Emails.Fields.EmailDate")" type="text" ng-model="model.EmailDate" ng-required="true"></sg-input>
+        <sg-input name="OperatorId" label="@T("Admin.Seagull.TRC.Emails.Fields.OperatorId")" type="text" ng-model="model.OperatorId" ng-required="true"></sg-input>
+        <sg-input name="Type" label="@T("Admin.Seagull.TRC.Emails.Fields.Type")" type="text" ng-model="model.Type" ng-required="true"></sg-input>
+
+    </form>
+</sg-page>

@@ -1,0 +1,461 @@
+﻿/*html,
+body {
+  padding: 0px;
+  margin: 0px;
+  background: #333;
+  font-family: 'Ubuntu', sans-serif;
+  color: #FFF;
+}
+
+body .hi {
+  text-align: center;
+  margin: 20px;
+}
+
+body * {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  margin: 0px;
+  padding: 0px;
+  border: none;
+  background: none;
+}*/
+/*body {
+  padding: 0px;
+  margin: 0px;
+  background: #333;
+  
+  color: #FFF;
+}
+
+body .hi {
+  text-align: center;
+  margin: 20px;
+}*/
+.navigation {
+    width: 74px;
+    /*background: #333;*/
+    font-family: 'Ubuntu';
+    position: relative;
+    /*max-width: 400px;*/
+    min-height: 60px;
+    /*margin: 20px auto;*/
+    border-radius: 6px;
+    border: 1px solid #f39c12;
+    -webkit-box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
+    background: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0.25)), to(rgba(0, 0, 0, 0.28)));
+    background: linear-gradient(#f4f4f4c7, rgba(28, 31, 33, 0.39));
+}
+
+.title {
+    float: left;
+    height: 60px;
+    line-height: 58px;
+    padding: 0px 20px;
+}
+
+.toggleNotifications {
+    position: relative;
+    display: -webkit-inline-box;
+    display: -ms-inline-flexbox;
+    display: inline-flex;
+    float: right;
+    height: 58px;
+    width: 70px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+    .toggleNotifications .show {
+        -webkit-box-flex: 1;
+        -ms-flex: 1;
+        flex: 1;
+        margin: auto;
+        height: 40px;
+        max-width: 40px;
+        text-align: center;
+        border-radius: 50%;
+        border: 0px solid #f39c12;
+        background: rgb(59, 89, 153);
+        font-size: 24px;
+        -webkit-transition: all 0.2s;
+        transition: all 0.2s;
+    }
+
+        .toggleNotifications .show:hover {
+            background: #d54135;
+            cursor: pointer;
+        }
+
+        .toggleNotifications .show i {
+            line-height: 38px;
+        }
+
+.count {
+    position: absolute;
+    top: 5px;
+    right: 26px;
+}
+
+    .count .num {
+        color: white;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        background: #f22;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        text-align: center;
+        line-height: 17px;
+        font-size: 11px;
+        -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
+        box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        -webkit-transition: all 0.3s;
+        transition: all 0.3s;
+    }
+
+.notifications {
+    position: absolute;
+    top: 61px;
+    right: 13px;
+    width: 300px;
+    background: #465;
+    border: 1px solid #455;
+    border-radius: 2px;
+    -webkit-box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.5);
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.5);
+    -webkit-transition: all 0.2s;
+    transition: all 0.2s;
+}
+
+    .notifications:after {
+        content: ' ';
+        position: absolute;
+        top: -13px;
+        right: 13px;
+        width: 0px;
+        height: 10px;
+        border-right: 10px solid transparent;
+        border-left: 10px solid transparent;
+        border-bottom: 10px solid #ffffff;
+        pointer-events: none;
+    }
+
+    .notifications:before {
+        content: ' ';
+        position: absolute;
+        top: -13px;
+        right: 14px;
+        width: 0px;
+        height: 10px;
+        border-right: 10px solid transparent;
+        border-left: 10px solid transparent;
+        border-bottom: 10px solid #ffffff;
+        pointer-events: none;
+    }
+
+    .notifications .btnbar {
+        position: relative;
+        height: 60px;
+        background: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0.55)), to(rgba(0, 0, 0, 0.5)));
+        background: linear-gradient(rgb(213, 65, 53), rgb(243, 156, 18));
+        -webkit-box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
+    }
+
+        .notifications .btnbar .text {
+            font-family: DroidArabicKufiRegular,'Ubuntu';
+            color: #ffffff;
+            line-height: 60px;
+            padding: 3px 100px;
+            position: absolute;
+            top: 0px;
+            -webkit-transition: all 1s;
+            transition: all 1s;
+        }
+
+            .notifications .btnbar .text.empty {
+                opacity: 0;
+            }
+
+        .notifications .btnbar .delete {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            width: 40px;
+            height: 40px;
+            background: rgb(213, 65, 53);
+            border-radius: 50%;
+            text-align: center;
+            border: 2px solid rgb(255, 255, 255);
+            -webkit-transition: all 0.2s;
+            transition: all 0.2s;
+        }
+
+            .notifications .btnbar .delete i {
+                line-height: 38px;
+                font-size: 18px;
+                -webkit-transition: all 1s;
+                transition: all 1s;
+                position: absolute;
+                top: -1px;
+                left: 9px;
+            }
+
+                .notifications .btnbar .delete i.empty {
+                    opacity: 0;
+                }
+
+            .notifications .btnbar .delete:hover {
+                background: rgba(255, 75, 50, 0.95);
+                cursor: pointer;
+            }
+
+    .notifications .note {
+        font-family: DroidArabicKufiRegular,'Ubuntu';
+        font-size: 0.9em;
+        padding: 0px 20px;
+        height: 50px;
+        line-height: 40px;
+        color: white;
+        border-radius: 2px;
+        -webkit-transition: all 0.2s;
+        transition: all 0.2s;
+        overflow: hidden;
+        max-height: 50px;
+    }
+
+        .notifications .note:first-of-type {
+            margin-top: 0px;
+        }
+
+        .notifications .note.read {
+            color: #CDCDCD;
+        }
+
+        .notifications .note:hover {
+            background: rgba(0, 0, 0, 0.25);
+            cursor: pointer;
+        }
+
+        .notifications .note i {
+            position: relative;
+            top: 1px;
+            margin-right: 2px;
+            left: 6px;
+            vertical-align: middle;
+            color: #f53b2c !important;
+        }
+
+#navtoggle {
+    display: none;
+}
+
+    #navtoggle:checked ~ .toggleNotifications .notifications {
+        opacity: 0;
+    }
+
+#deletetoggle {
+    display: none;
+}
+
+    #deletetoggle:checked ~ .toggleNotifications .notifications .groupofnotes .mainwrapper {
+        max-height: 0px;
+    }
+
+        #deletetoggle:checked ~ .toggleNotifications .notifications .groupofnotes .mainwrapper:nth-of-type(1) {
+            -webkit-transition-delay: 0.2s;
+            transition-delay: 0.2s;
+        }
+
+        #deletetoggle:checked ~ .toggleNotifications .notifications .groupofnotes .mainwrapper:nth-of-type(2) {
+            -webkit-transition-delay: 0.4s;
+            transition-delay: 0.4s;
+        }
+
+        #deletetoggle:checked ~ .toggleNotifications .notifications .groupofnotes .mainwrapper:nth-of-type(3) {
+            -webkit-transition-delay: 0.6s;
+            transition-delay: 0.6s;
+        }
+
+        #deletetoggle:checked ~ .toggleNotifications .notifications .groupofnotes .mainwrapper:nth-of-type(4) {
+            -webkit-transition-delay: 0.8s;
+            transition-delay: 0.8s;
+        }
+
+    #deletetoggle:checked ~ .toggleNotifications .notifications .btnbar .delete {
+        -webkit-transition-delay: 1s;
+        transition-delay: 1s;
+        background: #465;
+    }
+
+    #deletetoggle:checked ~ .toggleNotifications .notifications .btnbar .full {
+        opacity: 0;
+    }
+
+    #deletetoggle:checked ~ .toggleNotifications .notifications .btnbar .empty {
+        opacity: 1;
+        -webkit-transition-delay: 1s;
+        transition-delay: 1s;
+    }
+
+    #deletetoggle:checked ~ .toggleNotifications .count .num {
+        opacity: 0;
+        -webkit-transform: translateY(-20px);
+        transform: translateY(-20px);
+    }
+
+        #deletetoggle:checked ~ .toggleNotifications .count .num:nth-of-type(4) {
+            -webkit-transition-delay: 0.25s;
+            transition-delay: 0.25s;
+        }
+
+        #deletetoggle:checked ~ .toggleNotifications .count .num:nth-of-type(3) {
+            -webkit-transition-delay: 0.33333s;
+            transition-delay: 0.33333s;
+        }
+
+        #deletetoggle:checked ~ .toggleNotifications .count .num:nth-of-type(2) {
+            -webkit-transition-delay: 0.5s;
+            transition-delay: 0.5s;
+        }
+
+        #deletetoggle:checked ~ .toggleNotifications .count .num:nth-of-type(1) {
+            -webkit-transition-delay: 1s;
+            transition-delay: 1s;
+        }
+
+.material-icons {
+    color: white !important;
+}
+
+.shakingdDiv {
+    animation: shake 6.82s cubic-bezier(.36,.07,.19,.97) both;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+@keyframes shake {
+    10%, 90% {
+        transform: translate3d(-1px, 0, 0);
+    }
+
+    20%, 80% {
+        transform: translate3d(2px, 0, 0);
+    }
+
+    30%, 50%, 70% {
+        transform: translate3d(-4px, 0, 0);
+    }
+
+    40%, 60% {
+        transform: translate3d(4px, 0, 0);
+    }
+}
+
+@-webkit-keyframes argh-my-eyes {
+    0% {
+        background-color: #fff;
+    }
+
+    49% {
+        background-color: #fff;
+    }
+
+    50% {
+        background-color: #000;
+    }
+
+    99% {
+        background-color: #000;
+    }
+
+    100% {
+        background-color: #fff;
+    }
+}
+
+@-moz-keyframes argh-my-eyes {
+    0% {
+        background-color: #f39c12;
+    }
+
+    49% {
+        background-color: #f39c12;
+    }
+
+    50% {
+        background-color: #D54135;
+    }
+
+    99% {
+        background-color: #D54135;
+    }
+
+    100% {
+        background-color: #D54135;
+    }
+}
+
+@keyframes argh-my-eyes {
+    0% {
+        background-color: #f39c12;
+    }
+
+    49% {
+        background-color: #f39c12;
+    }
+
+    50% {
+        background-color: #D54135;
+    }
+
+    99% {
+        background-color: #D54135;
+    }
+
+    100% {
+        background-color: #D54135;
+    }
+}
+
+.flash {
+    -webkit-animation: argh-my-eyes 1s infinite;
+    -moz-animation: argh-my-eyes 1s infinite;
+    animation: argh-my-eyes 1s infinite;
+}
+
+.groupofnotes {
+    background: #3b5999;
+}
+
+.mainwrapper {
+    /*width: 200px;*/
+    border: 1px solid black;
+    overflow: hidden; /* add this to contain floated children */
+}
+
+.firstIcon {
+    height: 50px;
+    /* width: 100px; */
+    float: right;
+    /* border: 1px solid red; */
+    background: #d54135;
+    color: red;
+    top: 0;
+}
+
+.secondNote {
+    /*border: 1px solid green;*/
+    /*float: left;*/ /* add this */
+}
+
+.centerIcon {
+    margin: 9px 0 0 0;
+}

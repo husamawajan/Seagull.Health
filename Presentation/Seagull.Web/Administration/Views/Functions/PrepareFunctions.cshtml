@@ -1,0 +1,9 @@
+@model int
+@{
+    //page title
+    ViewBag.Title = T("Admin.Functionss").Text;
+    //active menu item (system name)
+    Html.SetActiveMenuItemSystemName("Functions");
+}
+@Html.Partial("_CreateOrUpdate" , Model)
+

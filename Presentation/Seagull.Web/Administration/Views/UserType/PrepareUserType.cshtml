@@ -1,0 +1,13 @@
+﻿@model int
+@{
+    //page title
+    ViewBag.Title = T("Admin.UserTypes").Text;
+    //active menu item (system name)
+    Html.SetActiveMenuItemSystemName("UserTypes");
+}
+<sg-page title="@T("Admin.UserTypes.AddNew")">
+    <form sg-form name="myform" data-ctrl="UserType" data-id="@Model" token="@Html.RequestVerificationToken("UserType")" form-controller="null">
+        <sg-form-toolbar></sg-form-toolbar>
+        <sg-input type="text" name="Type" label="@T("Admin.Seagull.UserTypes.Fields.Type")" ng-model="model.Type" ng-required="true"></sg-input>
+    </form>
+</sg-page>

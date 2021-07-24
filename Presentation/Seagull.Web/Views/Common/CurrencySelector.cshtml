@@ -1,0 +1,21 @@
+﻿@model CurrencySelectorModel
+@using Seagull.Web.Models.Common;
+@using Seagull.Core;
+@using Seagull.Core.Infrastructure;
+@if (Model.AvailableCurrencies.Count > 1)
+{
+    <div class="currency-selector">
+        @{
+        var webHelper = EngineContext.Current.Resolve<IWebHelper>();
+    
+        var currencies = Model.AvailableCurrencies.Select(x => new SelectListItem
+            {
+                Text = x.Name,
+                Value = webHelper.ModifyQueryString(Url.RouteUrl("ChangeCurrency", new { usercurrency = x.Id }), "returnurl=" + HttpUtility.UrlEncode(HttpContext.Current.Request.RawUrl), null),
+                Selected = x.Id.Equals(Model.CurrentCurrencyId)
+            });
+    
+        @Html.DropDownList("userCurrency", currencies, new { onchange = "setLocation(this.value);" })    
+            }
+    </div>
+}

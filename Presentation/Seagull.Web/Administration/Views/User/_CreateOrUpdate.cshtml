@@ -1,0 +1,738 @@
+﻿@using Seagull.Services.Stores
+@model UserModel
+@{
+    //custom tabs
+    var eventMessage = new AdminTabStripCreated(this.Html, "user-edit");
+    EngineContext.Current.Resolve<IEventPublisher>().Publish(eventMessage);
+    bool IsMailEntity = EngineContext.Current.Resolve<Seagull.Core.IWorkContext>().CurrentUser
+        .UserRoles.Where(a => a.Name.Contains("Post department official")).Count() > 0;
+    foreach (var eventBlock in eventMessage.BlocksToRender)
+    {
+        @eventBlock
+    }
+}
+@Html.ValidationSummary(false)
+<script src="@Url.Content("~/Administration/Content/Select2/Scripts/select2Extension.js")"></script>
+<input type="hidden" value="@Model.Id" name="Id" />
+<script>
+    $(document).ready(function() {
+        bindBootstrapTabSelectEvent('user-edit');
+        buildSelect2For("#UserOperatorId", "@Url.Action("Select3GetAllOperator", "GenericGets")", "");
+        fillDropDown("#UserOperatorId", "@Model.UserOperatorId", "@Model.strUserOperatorId");
+    });
+    $(document).ready(function() {
+        bindBootstrapTabSelectEvent('user-edit');
+        buildSelect2For("#UserMailId", "@Url.Action("Select3GetAllOperator", "GenericGets")", "");
+        fillDropDown("#UserMailId", "@Model.UserMailId", "@Model.strUserMailId");
+    });
+</script>
+<div class="content">
+    <div class="form-horizontal">
+        <div id="user-edit" class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+                @Html.RenderBootstrapTabHeader("tab-info", @T("Admin.Users.Users.Info"), true)
+                @if (Model.Id > 0)
+                {
+                    @Html.RenderBootstrapTabHeader("tab-address", @T("Admin.Users.Users.Addresses"))
+                    @Html.RenderBootstrapTabHeader("tab-activitylog", @T("Admin.Users.Users.ActivityLog"))
+                }
+            </ul>
+            <div class="tab-content">
+                @Html.RenderBootstrapTabContent("tab-info", @TabInfo(), true)
+                @if (Model.Id > 0)
+                {
+                    @Html.RenderBootstrapTabContent("tab-address", @TabAddresses())
+                    @Html.RenderBootstrapTabContent("tab-activitylog", @TabActivityLog())
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@*save selected tab name*@
+<input type="hidden" id="selected-tab-name" name="selected-tab-name" value="@(Html.GetSelectedTabName())">
+@helper TabInfo()
+{
+
+if (Model.CountryEnabled && Model.StateProvinceEnabled)
+{
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $("#@Html.FieldIdFor(model => model.CountryId)").change(function() {
+                    var selectedItem = $(this).val();
+                    var ddlStates = $("#@Html.FieldIdFor(model => model.StateProvinceId)");
+
+                    var postData = {
+                        countryId: selectedItem,
+                        addSelectStateItem: "true"
+                    };
+
+                    $.ajax({
+                        cache: false,
+                        type: "GET",
+                        url: "@(Url.Action("GetStatesByCountryId", "Country"))",
+                        data: postData,
+                        success: function(data) {
+                            ddlStates.html('');
+                            $.each(data, function(id, option) {
+                                ddlStates.append($('<option></option>').val(option.id).html(option.name));
+                            });
+                        },
+                        error: function(xhr, ajaxOptions, thrownError) {
+                            alert('Failed to retrieve states.');
+                        }
+                    });
+                });
+            });
+        </script>
+}
+    <div class="panel-group">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                @if (Model.UsernamesEnabled)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.SeagullLabelFor(model => model.Username)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.SeagullEditorFor(model => model.Username)
+                            @Html.ValidationMessageFor(model => model.Username)
+                        </div>
+                    </div>
+                }
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.SeagullLabelFor(model => model.Email)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.SeagullEditorFor(model => model.Email)
+                        @Html.ValidationMessageFor(model => model.Email)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.SeagullLabelFor(model => model.Password)
+                    </div>
+                    <div class="col-md-9">
+                        <div class="input-group">
+                            @Html.SeagullEditorFor(model => model.Password)
+                            <div class="input-group-btn">
+                                @if (Model.Id > 0)
+                                {
+                                    <button type="submit" name="changepassword" class="btn btn-info">
+                                        @T("Admin.Users.Users.Fields.Password.Change")
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.Password)
+                    </div>
+                </div>
+                @if (Model.Id > 0 && Model.AssociatedExternalAuthRecords.Count > 0)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.SeagullLabelFor(model => model.AssociatedExternalAuthRecords)
+                        </div>
+                        <div class="col-md-9">
+                            <div id="externalauthrecords-grid"></div>
+                            <script>
+
+                                //local datasource
+                                var externalauthrecords = [
+                                @for (int i = 0; i < Model.AssociatedExternalAuthRecords.Count; i++)
+                                {
+                                    var aear = Model.AssociatedExternalAuthRecords[i];
+                                    <text>
+                                        {
+                                            AuthMethodName: "@(Html.Raw(HttpUtility.JavaScriptStringEncode(aear.AuthMethodName)))",
+                                            Email: "@(Html.Raw(HttpUtility.JavaScriptStringEncode(aear.Email)))",
+                                            ExternalIdentifier: "@(Html.Raw(HttpUtility.JavaScriptStringEncode(aear.ExternalIdentifier)))"
+                                        }
+                                    </text>
+                                    if (i != Model.AssociatedExternalAuthRecords.Count - 1)
+                                    {
+                                        <text>,</text>
+                                    }
+                                }
+                                ];
+
+                                $(document).ready(function () {
+                                    $("#externalauthrecords-grid").kendoGrid({
+                                        dataSource: {
+                                            data: externalauthrecords,
+                                            schema: {
+                                                model: {
+                                                    fields: {
+                                                        AuthMethodName: { type: "string" },
+                                                        Email: { type: "string" },
+                                                        ExternalIdentifier: { type: "string" }
+                                                    }
+                                                }
+                                            },
+                                            error: function (e) {
+                                                display_kendoui_grid_error(e);
+                                                // Cancel the changes
+                                                this.cancelChanges();
+                                            }
+                                        },
+                                        pageable: {
+                                            refresh: true,
+                                            numeric: false,
+                                            previousNext: false,
+                                            info: false,
+                                            @Html.Partial("_GridPagerMessages")
+                                        },
+                                        scrollable: false,
+                                        columns: [
+                                            {
+                                                field: "AuthMethodName",
+                                                title: "@T("Admin.Users.Users.AssociatedExternalAuth.Fields.AuthMethodName")",
+                                                width: 100
+                                            }, {
+                                                field: "Email",
+                                                title: "@T("Admin.Users.Users.AssociatedExternalAuth.Fields.Email")",
+                                                width: 100
+                                            },{
+                                                field: "ExternalIdentifier",
+                                                title: "@T("Admin.Users.Users.AssociatedExternalAuth.Fields.ExternalIdentifier")",
+                                                width: 300
+                                            }
+                                        ]
+                                    });
+                                });
+
+                            </script>
+                        </div>
+                    </div>
+                }
+                @*<div class="form-group">
+                        @*<div class="col-md-3">
+                            @Html.SeagullLabelFor(model => model.UserTypeId)
+                        </div>
+                        <div class="col-md-9">
+                            <div class="input-group input-group-required">
+                                @Html.SeagullDropDownListFor(model => model.UserTypeId, Model.AvailableUserTypes)
+                                <div class="input-group-btn">
+                                    @Html.RequiredHint()
+                                </div>
+                            </div>
+                            <script>
+                                var canedit = @Model.Id > 0 ? true : false;
+                                function fillUserEntity (postData){
+                                    $('#@Html.FieldIdFor(model => model.EntityUserId)').empty();
+                                    $.ajax({
+                                        cache: false,
+                                        type: "POST",
+                                        url: "@( Url.Action("GetAllUserEntitysByUserTypeId", "GenericGets"))",
+                                        data: postData,
+                                        success: function(data) {
+                                            $.each(data.data, function (i, item) {
+                                                $('#@Html.FieldIdFor(model => model.EntityUserId)').append($('<option>', {
+                                                    value: item.Id,
+                                                    text : item.Name
+                                                }));
+                                            });
+                                        },
+                                        error: function(xhr, ajaxOptions, thrownError) {
+
+                                        }
+                                    });
+                                }
+
+                                $(document).ready(function() {
+                                    $('#@Html.FieldIdFor(model => model.UserTypeId)').change(function(e){
+                                        var postData = {
+                                            UserTypeId: this.value,
+                                        };
+                                        fillUserEntity (postData);
+                                    });
+                                });
+                            </script>
+
+                        </div>
+                    </div>*@
+                @*<div class="form-group">
+                        <div class="col-md-3">
+                            @Html.SeagullLabelFor(model => model.UserDirectoriesId)
+                        </div>
+                        <div class="col-md-9">
+                            <div class="input-group input-group-required">
+                                @Html.SeagullDropDownListFor(model => model.UserDirectoriesId, Model.AvailableEntityUsers)
+                                <div class="input-group-btn">
+                                    @Html.RequiredHint()
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>*@
+              
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.SeagullLabelFor(model => model.SelectedUserRoleIds)
+                    </div>
+                    <div class="col-md-9">
+                        <div class="input-group input-group-required">
+                            @Html.EditorFor(model => model.SelectedUserRoleIds, new { SelectList = Model.AvailableUserRoles })
+                            <div class="input-group-btn">
+                                @Html.RequiredHint()
+                            </div>
+                        </div>
+                        <script>
+                            $(document).ready(function() {
+                                var userRolesIdsInput = $('#@Html.FieldIdFor(model => model.SelectedUserRoleIds)').data("kendoMultiSelect");
+                                userRolesIdsInput.setOptions({
+                                    userRolesIdsInput: false
+                                });
+
+                                @if (Model.AvailableUserRoles.Count == 0)
+                            {
+                                <text>
+                                userRolesIdsInput.setOptions({
+                                    enable: false,
+                                    placeholder: '@T("Admin.Users.Users.Fields.UserRoles.NoRoles")'
+                                });
+                                userRolesIdsInput._placeholder();
+                                userRolesIdsInput._enable();
+                                </text>
+                            }
+
+                            });
+                        </script>
+                    </div>
+                </div>
+                                
+                <div class="form-group">
+                    <div class="col-md-3">
+                            <label class="label-wrapper">@T("Admin.Users.Users.Fields.UserOperatorId")</label>
+                    </div>
+                    <div class="col-md-3">
+                        @if (Model.UserOperatorId.Value == -1)
+                        {
+                            @Html.TextAreaFor(model => model.UserMailId)
+
+                        }
+                        else
+                        {
+                            @Html.TextAreaFor(model => model.UserOperatorId)
+                        }
+                    </div>
+                </div>
+
+        @* @if (Model.GenderEnabled)
+         {
+             <div class="form-group">
+                 <div class="col-md-3">
+                     @Html.SeagullLabelFor(model => model.Gender)
+                 </div>
+                 <div class="col-md-9">
+                     <div class="raw">
+                         <div class="col-md-1">
+                             <div class="radio">
+                                 <label>
+                                     @Html.RadioButton("Gender", "M", (Model.Gender == "M"), new { id = "Gender_Male" })
+                                     @T("Admin.Users.Users.Fields.Gender.Male")
+                                 </label>
+                             </div>
+                         </div>
+                         <div class="col-md-11">
+                             <div class="radio">
+                                 <label>
+                                     @Html.RadioButton("Gender", "F", (Model.Gender == "F"), new { id = "Gender_Female" })
+                                     @T("Admin.Users.Users.Fields.Gender.Female")
+                                 </label>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+         }*@
+
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.SeagullLabelFor(model => model.FirstName)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.SeagullEditorFor(model => model.FirstName)
+                        @Html.ValidationMessageFor(model => model.FirstName)
+                    </div>
+                </div>
+                    @*
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.SeagullLabelFor(model => model.LastName)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.SeagullEditorFor(model => model.LastName)
+                        @Html.ValidationMessageFor(model => model.LastName)
+                    </div>
+                </div>*@
+
+                @*@if (Model.DateOfBirthEnabled)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.SeagullLabelFor(model => model.DateOfBirth)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.SeagullEditorFor(model => model.DateOfBirth)
+                            @Html.ValidationMessageFor(model => model.DateOfBirth)
+                        </div>
+                    </div>
+                }*@
+
+                @if (Model.StreetAddressEnabled)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.SeagullLabelFor(model => model.StreetAddress)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.SeagullEditorFor(model => model.StreetAddress)
+                            @Html.ValidationMessageFor(model => model.StreetAddress)
+                        </div>
+                    </div>
+                }
+                @if (Model.StreetAddress2Enabled)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.SeagullLabelFor(model => model.StreetAddress2)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.SeagullEditorFor(model => model.StreetAddress2)
+                            @Html.ValidationMessageFor(model => model.StreetAddress2)
+                        </div>
+                    </div>
+                }
+                @if (Model.ZipPostalCodeEnabled)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.SeagullLabelFor(model => model.ZipPostalCode)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.SeagullEditorFor(model => model.ZipPostalCode)
+                            @Html.ValidationMessageFor(model => model.ZipPostalCode)
+                        </div>
+                    </div>
+                }
+                @if (Model.CityEnabled)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.SeagullLabelFor(model => model.City)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.SeagullEditorFor(model => model.City)
+                            @Html.ValidationMessageFor(model => model.City)
+                        </div>
+                    </div>
+                }
+                @if (Model.CountryEnabled)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.SeagullLabelFor(model => model.CountryId)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.SeagullDropDownList("CountryId", Model.AvailableCountries)
+                            @Html.ValidationMessageFor(model => model.CountryId)
+                        </div>
+                    </div>
+                }
+                @if (Model.CountryEnabled && Model.StateProvinceEnabled)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.SeagullLabelFor(model => model.StateProvinceId)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.SeagullDropDownList("StateProvinceId", Model.AvailableStates)
+                            @Html.ValidationMessageFor(model => model.StateProvinceId)
+                        </div>
+                    </div>
+                }
+                @if (Model.PhoneEnabled)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.SeagullLabelFor(model => model.Phone)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.SeagullEditorFor(model => model.Phone)
+                            @Html.ValidationMessageFor(model => model.Phone)
+                        </div>
+                    </div>
+                }
+                @if (Model.FaxEnabled)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.SeagullLabelFor(model => model.Fax)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.SeagullEditorFor(model => model.Fax)
+                            @Html.ValidationMessageFor(model => model.Fax)
+                        </div>
+                    </div>
+                }
+                @if (Model.UserAttributes.Count > 0)
+                {
+                    @Html.Partial("_UserAttributes", Model.UserAttributes)
+                }
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.SeagullLabelFor(model => model.AdminComment)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.SeagullTextAreaFor(model => model.AdminComment)
+                        @Html.ValidationMessageFor(model => model.AdminComment)
+                    </div>
+                </div>
+                @if (Model.AllowUsersToSetTimeZone)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.SeagullLabelFor(model => model.TimeZoneId)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.SeagullDropDownList("TimeZoneId", Model.AvailableTimeZones)
+                            @Html.ValidationMessageFor(model => model.TimeZoneId)
+                        </div>
+                    </div>
+                }
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.SeagullLabelFor(model => model.Active)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.SeagullEditorFor(model => model.Active)
+                        @Html.ValidationMessageFor(model => model.Active)
+                    </div>
+                </div>
+                @if (Model.Id > 0)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.SeagullLabelFor(model => model.LastIpAddress)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.SeagullDisplayFor(model => model.LastIpAddress)
+                        </div>
+                    </div>
+                }
+                @if (Model.Id > 0)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.SeagullLabelFor(model => model.CreatedOn)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.SeagullDisplayFor(model => model.CreatedOn)
+                        </div>
+                    </div>
+                }
+                @if (Model.Id > 0)
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.SeagullLabelFor(model => model.LastActivityDate)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.SeagullDisplayFor(model => model.LastActivityDate)
+                        </div>
+                    </div>
+                }
+                @if (Model.Id > 0 && !String.IsNullOrEmpty(Model.LastVisitedPage))
+                {
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.SeagullLabelFor(model => model.LastVisitedPage)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.SeagullDisplayFor(model => model.LastVisitedPage)
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+
+@helper TabAddresses()
+{
+    <div class="panel-group">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div id="user-addresses-grid"></div>
+                <script>
+                    $(document).ready(function () {
+                        $("#user-addresses-grid").kendoGrid({
+                            dataSource: {
+                                type: "json",
+                                transport: {
+                                    read: {
+                                        url: "@Html.Raw(Url.Action("AddressesSelect", "User", new { userId = Model.Id }))",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: addAntiForgeryToken
+                                    },
+                                    destroy: {
+                                        url: "@Html.Raw(Url.Action("AddressDelete", "User",new { userId = Model.Id }))",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: addAntiForgeryToken
+                                    }
+                                },
+                                schema: {
+                                    data: "Data",
+                                    total: "Total",
+                                    errors: "Errors",
+                                    model: {
+                                        id: "Id"
+                                    }
+                                },
+                                error: function(e) {
+                                    display_kendoui_grid_error(e);
+                                    // Cancel the changes
+                                    this.cancelChanges();
+                                },
+                                serverPaging: true,
+                                serverFiltering: true,
+                                serverSorting: true
+                            },
+                            pageable: {
+                                refresh: true,
+                                numeric: false,
+                                previousNext: false,
+                                info: false,
+                                @Html.Partial("_GridPagerMessages")
+                            },
+                            editable: {
+                                confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                                mode: "inline"
+                            },
+                            scrollable: false,
+                            columns: [{
+                                field: "FirstName",
+                                title: "@T("Admin.Address.Fields.FirstName")"
+                            }, {
+                                field: "LastName",
+                                title: "@T("Admin.Address.Fields.LastName")"
+                            }, {
+                                field: "Email",
+                                title: "@T("Admin.Address.Fields.Email")"
+                            }, {
+                                field: "PhoneNumber",
+                                title: "@T("Admin.Address.Fields.PhoneNumber")"
+                            }, {
+                                field: "FaxNumber",
+                                title: "@T("Admin.Address.Fields.FaxNumber")"
+                            }, {
+                                field: "AddressHtml",
+                                title: "@T("Admin.Address")",
+                                encoded: false
+                            }, {
+                                field: "Id",
+                                title: "@T("Admin.Common.Edit")",
+                                width: 100,
+                                headerAttributes: { style: "text-align:center" },
+                                attributes: { style: "text-align:center" },
+                                template: '<a class="btn btn-default" href="@Url.Content("~/Admin/User/AddressEdit?userId=")@Model.Id&addressid=#=Id#"><i class="fa fa-pencil"></i>@T("Admin.Common.Edit")</a>'
+                            }, {
+                                command: { name: "destroy", text: "@T("Admin.Common.Delete")" },
+                                title: "@T("Admin.Common.Delete")",
+                                width: 100,
+                                headerAttributes: { style: "text-align:center" },
+                                attributes: { style: "text-align:center" }
+                            }]
+                        });
+                    });
+                </script>
+            </div>
+            <div class="panel-footer">
+                <button type="button" class="btn btn-primary" onclick="location.href = '@Url.Action("AddressCreate", new { seagull = UrlHelperExtensions.ActionEncodedCustom(new { userId = Model.Id }) })'">
+                    @T("Admin.Users.Users.Addresses.AddButton")
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@helper TabActivityLog()
+{
+var defaultGridPageSize = EngineContext.Current.Resolve<Seagull.Core.Domain.Common.AdminAreaSettings>().DefaultGridPageSize;
+var gridPageSizes = EngineContext.Current.Resolve<Seagull.Core.Domain.Common.AdminAreaSettings>().GridPageSizes;
+
+    <div class="panel-group">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div id="activitylog-grid"></div>
+                <script>
+                    $(document).ready(function () {
+                        $("#activitylog-grid").kendoGrid({
+                            dataSource: {
+                                type: "json",
+                                transport: {
+                                    read: {
+                                        url: "@Html.Raw(Url.Action("ListActivityLog", "User", new {userId = Model.Id }))",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: addAntiForgeryToken
+                                    }
+                                },
+                                schema: {
+                                    data: "Data",
+                                    total: "Total",
+                                    errors: "Errors"
+                                },
+                                error: function(e) {
+                                    display_kendoui_grid_error(e);
+                                    // Cancel the changes
+                                    this.cancelChanges();
+                                },
+                                pageSize: @(defaultGridPageSize),
+                                serverPaging: true,
+                                serverFiltering: true,
+                                serverSorting: true
+                            },
+                            pageable: {
+                                refresh: true,
+                                pageSizes: [@(gridPageSizes)],
+                                @Html.Partial("_GridPagerMessages")
+                            },
+                            editable: {
+                                confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                                mode: "inline"
+                            },
+                            scrollable: false,
+                            columns: [{
+                                field: "ActivityLogTypeName",
+                                title: "@T("Admin.Users.Users.ActivityLog.ActivityLogType")",
+                                width: 300,
+                            }, {
+                                field: "IpAddress",
+                                title: "@T("Admin.Users.Users.ActivityLog.IpAddress")",
+                                width: 100
+                            }, {
+                                field: "Comment",
+                                title: "@T("Admin.Users.Users.ActivityLog.Comment")"
+                            }, {
+                                field: "CreatedOn",
+                                title: "@T("Admin.Users.Users.ActivityLog.CreatedOn")",
+                                width: 200,
+                                type: "date",
+                                format: "{0:G}"
+                            }]
+                        });
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+}
+

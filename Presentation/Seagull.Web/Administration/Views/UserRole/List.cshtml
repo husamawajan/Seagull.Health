@@ -1,0 +1,17 @@
+﻿@{
+    ViewBag.Title = T("Admin.Users.UserRoles").Text;
+    Html.SetActiveMenuItemSystemName("User roles");
+}
+<sg-page title="@T("Admin.Users.UserRoles")">
+    <sg-table datasrc="UserRole/ListUserRoles" create-action="@Url.Action("PrepareUserRole", "UserRole", new { seagull = UrlHelperExtensions.ActionEncodedCustom(new { id = 0 }) })" token="@Html.RequestVerificationToken("UserRoleGrid")">
+        <sg-col name="Id" title="Id" type="number"></sg-col>
+        <sg-col name="Name" title="Name" type="text"></sg-col>
+        @*<sg-col name="SystemName" title="SystemName" type="text"></sg-col>*@
+        <sg-col name="Active" title="Active" type="checkbox"></sg-col>
+        <sg-col name="IsSystemRole" title="Is System Role" type="checkbox"></sg-col>
+    </sg-table>
+</sg-page> 
+
+
+
+

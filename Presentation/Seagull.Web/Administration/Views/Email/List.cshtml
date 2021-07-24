@@ -1,0 +1,23 @@
+@{
+    ViewBag.Title = T("Admin.Emails").Text;
+    Html.SetActiveMenuItemSystemName("Email");
+}
+<sg-page title="@T("Admin.Email")">
+    <sg-table datasrc="Email/ListEmails" has-operation="{add: true, edit : true ,delete :false, customview: {show : false , tablename : 'Email' }}" create-action="@Url.Action("PrepareEmail", "Email",new { seagull = UrlHelperExtensions.ActionEncodedCustom(new { id = 0 })})" token="@Html.RequestVerificationToken("EconomyPlanProjectTaskGrid")">
+        <sg-col name="Id" title="@T("Admin.Seagull.TRC.Emails.Fields.Id")" type="text"></sg-col>
+        <sg-col name="From" title="@T("Admin.Seagull.TRC.Emails.Fields.From")" type="text"></sg-col>
+        <sg-col name="To" title="@T("Admin.Seagull.TRC.Emails.Fields.To")" type="text"></sg-col>
+        <sg-col name="Subject" title="@T("Admin.Seagull.TRC.Emails.Fields.Subject")" type="text"></sg-col>
+        <sg-col name="Msg" title="@T("Admin.Seagull.TRC.Emails.Fields.Msg")" type="text"></sg-col>
+        <sg-col name="EmailDate" title="@T("Admin.Seagull.TRC.Emails.Fields.EmailDate")" type="text"></sg-col>
+        <sg-col name="OperatorId" title="@T("Admin.Seagull.TRC.Emails.Fields.OperatorId")" type="text"></sg-col>
+        <sg-col name="Type" title="@T("Admin.Seagull.TRC.Emails.Fields.Type")" type="text"></sg-col>
+
+        <sg-col title="Operation">
+            <span style="white-space:nowrap;">
+                <a class="btn btn-sm btn-warning" href="@Url.Action("PrepareEmail", "Email")/{{row.Id}}"><i class="fa fa-edit"></i></a>
+                <button class="btn btn-sm btn-danger" sg-confirm="vm.deleteRow(row)" modal-header="vm.delete_msg.header" modal-body="'Delete Row with id:'+row.Id"><i class="fa fa-trash"></i></button>
+            </span>
+        </sg-col>
+    </sg-table>
+</sg-page>

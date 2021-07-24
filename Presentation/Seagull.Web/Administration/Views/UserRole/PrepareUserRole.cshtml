@@ -1,0 +1,15 @@
+﻿@model int
+@{
+
+    ViewBag.Title = T("Admin.Users.UserRoles").Text;
+    Html.SetActiveMenuItemSystemName("User roles");
+}
+<sg-page title="@T("Admin.Users.UserRole.AddNew")">
+    <form name="myForm" sg-form data-ctrl="UserRole" data-id="@Model" token="@Html.RequestVerificationToken("UserRole")" form-controller="null">
+        <sg-form-toolbar></sg-form-toolbar>
+        <sg-input name="@T("Admin.Users.UserRole.Fields.Name")" label="Name" type="text" ng-model="model.Name"></sg-input>
+        @*<sg-input name="@T("Admin.Users.UserRole.Fields.SystemName")" label="SystemName" type="text" ng-model="model.SystemName"></sg-input>*@
+        <sg-input name="@T("Admin.Users.UserRole.Fields.Active")" label="Active" type="checkbox" ng-model="model.Active"></sg-input>
+        <sg-input name="@T("Admin.Users.UserRole.Fields.IsSystemRole")" label="Is System Role" type="checkbox" ng-model="model.IsSystemRole"></sg-input>
+    </form>
+</sg-page>

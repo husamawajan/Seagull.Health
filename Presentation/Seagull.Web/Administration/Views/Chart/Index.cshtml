@@ -1,0 +1,796 @@
+﻿@model Seagull.Admin.Models.charts.ChartsUInterfaceModel
+@{
+    //page title
+    ViewBag.Title = T("Admin.DashboardChart").Text;
+    Html.AppendCssFileParts("~/Administration/Content/ionicons/css/ionicons-2.0.1.min.css");
+}
+
+<link href="@Url.Content("~/Administration/Scripts/ReportGrid/css/ui.jqgrid-bootstrap.css")" rel="stylesheet" />
+<script src="@Url.Content("~/Administration/Scripts/ReportGrid/js/jquery.jqGrid.min.js")"></script>
+<script src="@Url.Content("~/Administration/Scripts/ReportGrid/src/i18n/grid.locale-en.js")"></script>
+<script src="@Url.Content("~/Administration/Scripts/ReportGrid/BuildGrid.js")"></script>
+<style>
+    .TextAreaWidth {
+        width: 752px;
+        height: 84px;
+    }
+
+    .dynamicRow {
+        margin-top: 10px !important;
+    }
+
+    .trashStyle {
+        /*background: red !important;*/
+        background-color: #dd4b39;
+        border-color: #dd4b39;
+    }
+
+    .whereTop {
+        margin-top: 13px;
+    }
+
+    .WordsStyle {
+        color: royalblue;
+        font-style: italic;
+        font-size: medium;
+        font-family: sans-serif;
+    }
+
+    .SubmitRight {
+        margin-right: 5px;
+    }
+
+    .Message {
+        /*background-color: green !important;*/
+        text-align: center;
+        color: white;
+        margin-bottom: 5px;
+    }
+
+    .trashleft {
+        margin-left: 5px;
+    }
+
+    .Notification {
+
+        text-align: center;
+        color: white;
+        margin-bottom: 5px;
+    }
+    .MyText{
+        width: 154px;
+        height: 35px;
+    }
+</style>
+<script src="@Url.Content("~/Administration/Scripts/JustGage/raphael-2.1.4.min.js")"></script>
+<script src="@Url.Content("~/Administration/Scripts/JustGage/justgage.js")"></script>
+<script src="@Url.Content("~/Administration/Scripts/chartjs/Chart.bundle.js")"></script>
+<script src="@Url.Content("~/Administration/Scripts/chartjs/utils.js")"></script>
+@Html.AntiForgeryToken()   @*to secure the form against XSS attacks*@
+<div class="content-header">
+    <h1>
+        @T("Admin.DashboardChart")
+    </h1>
+</div>
+<div class="modal fade" id="divselectCharts" role="dialog">
+    <div class="modal-dialog modal-lg" id="myModal">
+        <!-- Modal content-->
+        <div class="panel panel-primary" id="PanelId">
+
+            <div class="panel-heading">
+                @* class="modal-header"*@
+                @*<button type="button" class="close" data-dismiss="modal">&times;</button>  *@
+                <h4 class="panel-title">Dynamic Charts</h4>
+
+            </div>
+            <div class="panel-body">
+                <div class="row  Notification" id="Message">
+                    <ul id="notify"></ul>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-2">
+                       @Html.Label("Title Name :", "Title Name : ", new { @class = "control-label" })
+                    </div>
+                    <div class="col-md-10">
+                        @Html.TextBox("Text_Title", null, new { @class = "form-control" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-2">
+                        @Html.Label("Label Name :", null, new { @class = "control-label" })
+                    </div>
+                    <div class="col-md-10">
+                        @Html.TextBox("Text_Label", null, new { @class = "form-control" })
+                    </div>
+                </div>
+                <div class="col-xs-12" style="/*padding: 10px;*/">
+                    <div id="Radios">
+                        <form class="form-inline">
+                            <div class="form-group" id="CountButton">
+                                @Html.Label("Select :", null, new { @class = "control-label" })
+                                @Html.RadioButton("Function", "Count")
+                                @Html.Label(T("Admin.DashboardChart.Count").Text, null, new { @class = "control-label" })
+                            </div>
+                            <div class="form-group" id="SumButton">
+                                @Html.RadioButton("Function", "Sum")
+                                @Html.Label(T("Admin.DashboardChart.Sum").Text, null, new { @class = "control-label" })
+                                @Html.Label("       from :", null,new { @class = "control-label" })
+                            </div>
+                        </form>
+                    </div>
+                    <div id="GridButton">
+                        @Html.Label("Select : ", new { @class = "WordsStyle" })
+                        @Html.Label(T("Admin.DashboardChart.Grid").Text, new { @class = "WordsStyle" })
+                        @Html.RadioButton("Function", "Grid")
+                        @Html.Label("       from :", new { @class = "WordsStyle" })
+                    </div>
+                    <div class="col-xs-4" id="ColumnsList">
+                        @Html.DropDownList("ColumnsSelected", new List<SelectListItem>(), new { @class = "form-control" })
+                    </div>
+                    <div class="col-xs-2" id="ColumnsList">
+                        @Html.DropDownList("GridColumnsSelected", new List<SelectListItem>(), new { @class = "form-control", @multiple = "multiple" })
+                    </div>
+                    <div class="col-xs-2" id="MetersTypes">
+                        <select id="SelectedMeter">
+                            <option value="1">Bar Chart</option>
+                            <option value="2">Bubble Chart</option>
+                            <option value="3">Line Chart</option>
+                            <option value="4">Bullet Chart</option>
+                            <option value="5">Bie Chart</option>
+                        </select>
+                    </div>
+                   
+
+                </div>
+                <hr />
+                @*Table*@
+                <div class="col-xs-12">
+                    <div class="row" id="bodyselectCharts">
+                        <div class="col-xs-4 col-lg-offset-6">
+                            <div class=" col-xs-6 col-xs-offset-6">
+                                <a href="#" class="btn bg-blue col-xs-12" onclick="AddRowCriteria()">
+                                    <i class="fa fa-plus-square"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-xs-12" id="myRow">
+                            @Html.DropDownList("droptablename_1", Model._listofitems,
+                            new { onchange = "GetAllColums(this.value,1);", @class = "col-md-5 form-control" })
+                            @Html.DropDownList("dropcolumnname_1", new List<SelectListItem>(), new { @class = "col-md-3 form-control" })
+                            @Html.DropDownList("dropRelationname_1", Model._listofrelations, new { @class = "col-md-3 form-control" })
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-8 whereTop">
+                    <div class="col-xs-12">
+                        @Html.Label("Where", new { @class = "WordsStyle" })
+                        @Html.CheckBoxFor(model => model.Where, true)
+                    </div>
+                    <div class="col-xs-6">
+                        @Html.TextArea("TextArea", new { @class = "TextAreaWidth" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-footer">
+                <div class="col-xs-offset-10" id="Custom-panel-footer">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="content">
+    <div class="row">
+        <div class="content-header clearfix">
+            @*<div class="pull-right">
+                    <a href="#" class="btn bg-blue" onclick=" ClearTable() , buildChartPopup()">
+                        <i class="fa fa-plus-square"></i>
+                        @T("Admin.Common.AddNew")
+                    </a>
+                </div>*@
+        </div>
+        <div class="col-md-12">
+            <div class="box box-info" id="DynamicMetersPanel">
+                <div class="box-header with-border clearfix">
+                    <div class="box-title">
+                        <i class="fa ion-stats-bars"></i>
+                        @T("Admin.Dashboard.Meters")
+                    </div>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapsePanel">
+                            <text><i class="fa fa-plus"></i></text>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body" id="DynamicMeters">
+
+                </div>
+                <div class="box-footer">
+                    <div class="pull-right">
+                        @*<a href="#" class="btn bg-blue" onclick=" ClearTable() , buildChartPopup()" id="Meters">
+                                <i class="fa fa-plus-square"></i>
+                                @T("Admin.Common.AddNew")
+                            </a>*@
+                        <button class="btn bg-blue fa fa-plus-square" onclick=" ClearTable() , buildChartPopup(1)" id="Meters">
+                            @T("Admin.Common.AddNew")
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="box box-info" id="DynamicChartsPanel">
+                <div class="box-header with-border clearfix">
+                    <div class="box-title">
+                        <i class="fa ion-stats-bars"></i>
+                        @T("Admin.Dashboard.Charts")
+                    </div>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapsePanel">
+                            <text><i class="fa fa-plus"></i></text>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body" id="DynamicCharts" style="">
+                   
+                </div>
+                <div class="box-footer">
+                    <div class="pull-right">
+                        @*<a href="#" class="btn bg-blue" onclick=" ClearTable() , buildChartPopup()" id="Charts">
+                                <i class="fa fa-plus-square"></i>
+                                @T("Admin.Common.AddNew")
+                            </a>*@
+                        <button class="btn bg-blue fa fa-plus-square" onclick=" ClearTable() , buildChartPopup(2)" id="Charts">
+                            @T("Admin.Common.AddNew")
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="box box-info" id="DynamicGridsPanel">
+                <div class="box-header with-border clearfix">
+                    <div class="box-title">
+                        <i class="fa ion-stats-bars"></i>
+                        @T("Admin.Dashboard.Grids")
+                    </div>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapsePanel">
+                            <text><i class="fa fa-plus"></i></text>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body" id="DynamicGrids">
+                    <div id="jqGrid"></div>
+                    <div id="jqGridPager"></div>
+                </div>
+                <div class="box-footer">
+                    <div class="pull-right">
+                        @*<a href="#" class="btn bg-blue" onclick=" ClearTable(), buildChartPopup()" id="Grids">
+                                <i class="fa fa-plus-square"></i>
+                                @T("Admin.Common.AddNew")
+                            </a>*@
+                        <button class="btn bg-blue fa fa-plus-square" onclick=" ClearTable() , buildChartPopup(3)" id="Grids">
+                            @T("Admin.Common.AddNew")
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+
+</div>
+<script>
+    var mytable = [];
+    var osConfig = "";
+    $(document).ready(function () {
+        GetMeters();
+        GetAllCharts();
+        GetAllGrids();
+        $("#Message").hide();
+        $("#Radios").hide();
+        //  $("#SumButton").hide();
+        $("#GridButton").hide();
+
+
+        $("[data-widget='collapsePanel']").click(function () {
+            var box = $(this).parents(".box").first();
+            var bf = box.find(".box-body, .box-footer");
+            $(this).children()[0].innerHTML = "";
+            if ($("#" + box.children()[1].id).is(":visible")) {
+                $(this).children()[0].innerHTML = "<i class='fa fa-minus'></i>"
+                bf.slideUp();
+            }
+            else {
+                $(this).children()[0].innerHTML = "<i class='fa fa-plus'></i>"
+                bf.slideDown();
+            }
+        });
+
+
+
+    });
+    var countAdd;
+    var Rtype;
+    function buildChartPopup(type) {
+        $("#SubmitButton").prop("disabled", false);
+        $('#divselectCharts').modal('show');
+
+        if (type == 1) {
+            var d = document.getElementById("Radios");
+            d.className += " col-xs-7";
+            $("#Radios").show();
+            $("#GridButton").hide();
+            $("#GridColumnsSelected").hide();
+            $("#ColumnsSelected").show();
+            $("#MetersTypes").hide();
+
+            Rtype = 1;
+        }
+        else if (type == 2) {
+            var d = document.getElementById("Radios");
+            d.className += " col-xs-5";
+            $("#Radios").show();
+            $("#GridButton").hide();
+            $("#ColumnsSelected").show();
+            $("#GridColumnsSelected").hide();
+            $("#MetersTypes").show();
+            Rtype = 2;
+
+        }
+        else if (type == 3) {
+            var d = document.getElementById("GridButton");
+            d.className += " col-xs-7";
+            $("#GridButton").show();
+            $("#ColumnsSelected").hide();
+            $("#GridColumnsSelected").show();
+            $("#Radios").hide();
+            $("#MetersTypes").hide();
+            Rtype = 3;
+        }
+        $("#Custom-panel-footer").html('');
+        var body = "<button type='button' class='btn btn-primary SubmitRight' id='SubmitButton' onclick='sendQuery(" + type + ")'>Submit</button>" +
+                    "<button type='button' class='btn btn-danger' id='CloseButton' data-dismiss='modal' onclick='ClearTable()'>Close</button>";
+        $("#Custom-panel-footer").append(body);
+        countAdd = 1;
+    }
+    function GetAllColums(value, id) {
+        $.ajax({
+            url: '@Url.Action("GetAllColoumnName", "Chart")',
+            type: "POST",
+            data: { __RequestVerificationToken: $('[name=__RequestVerificationToken]').val(), TableName: value },
+            dataType: "json",
+            success: function (result) {
+
+                document.getElementById("dropcolumnname_" + id).innerHTML = "";
+                var data = "";
+                var upperdata = "";
+                var table = value;
+                $.each(result, function (key, value) {
+                    data += "<option value='[" + table + "].[" + value.Text + "]'>[" + table + "].[" + value.Text + "]</option>";
+                });
+                $("#dropcolumnname_" + id).append(data);
+                if (countAdd == 1) {
+                    $("#ColumnsSelected").empty().append(data);
+                    $("#GridColumnsSelected").empty().append(data);
+                }
+                else {
+                    $("#ColumnsSelected").append(data);
+                    $("#GridColumnsSelected").append(data);
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                alert(xhr.status);
+                alert(thrownError);
+            }
+        });
+    }
+    function AddRowCriteria() {
+        countAdd = countAdd + 1;
+        var table = "";
+        $("#bodyselectCharts").append("<div id='rowId_" + countAdd + "' class='col-xs-12 dynamicRow'>" +
+            "<select class='col-md-5 form-control' id='droptablename_"
+             + countAdd + "' name='droptablename' onchange='GetAllColums(this.value ," + countAdd + ");'></select>"
+            + "<select class='col-md-3 form-control' id='dropcolumnname_" + countAdd + "' name='droptablename'></select>"
+            + "<select class='col-md-3 form-control' id='dropRelationname_" + countAdd + "' name='droptablename'></select>"
+            + '<button type="button" class=" glyphicon glyphicon-trash btn-danger trashleft" '
+            + " onclick='deleteRow(" + countAdd + ");'></button>"
+            + "</div>");
+        @{
+            foreach (var item in Model._listofitems)
+            {
+                <text> table += "<option value='@item.Value'>@item.Text</option>"</text>
+            }
+         }
+        $("#droptablename_" + countAdd).append(table);
+        table = "";
+        @{
+             foreach (var item in Model._listofrelations)
+            {
+                <text> table += "<option value='@item.Value'>@item.Text</option>"</text>
+            }
+        }
+        $("#dropRelationname_" + countAdd).append(table);
+    }
+    $(document).ready(function () {
+
+        $("#TextArea").hide();
+        $("#Where").click(function () {
+            if ($('#Where').is(':checked')) {
+                //$('#TextArea').text("My Text Area");
+                $("#TextArea").show();
+            }
+            else {
+
+                $("#TextArea").hide();
+            }
+        });
+    });
+    function deleteRow(rowId) {
+        $("#rowId_" + rowId).remove();
+        //alert(rowId);
+    }
+    function sendQuery(type) {
+        $("#SubmitButton").prop("disabled", true);
+        var arrayofitems = [];
+        var IsValid = true;
+        var listOfError = "";
+        for (i = 1 ; i <= countAdd; i++) {
+            var table = document.getElementById("droptablename_" + i).value + ","
+                + document.getElementById("dropcolumnname_" + i).value + ","
+                + document.getElementById("dropRelationname_" + i).value;
+            arrayofitems.push(table);
+        }
+        //check if the radio button is selected; return true if radio button is checked and false if radio button not checked
+        var radiochecked = $("input[type='radio'][name='Function']:checked").val();
+        //return true if the user doesn't select any table and false otherwise
+        if ($('#ColumnsSelected').val() == null)
+        { var upperlistchecked = true; }
+        else { var upperlistchecked = false; }
+        for (i = 1 ; i <= countAdd; i++) {
+
+            if ($('#dropcolumnname_' + i).val() == null)
+            { var TableColumnChecked = true; }
+            else { var TableColumnChecked = false; }
+            if (TableColumnChecked) {
+                listOfError += "<li>Please Select a column from dropdown list for table " + i + " </li>";
+                IsValid = false;
+            }
+        }
+        if (!radiochecked) {
+            listOfError += "<li>Please Check a radio button</li>";
+            IsValid = false;
+        }
+        if (upperlistchecked) {
+            listOfError += "<li>Please Select a column from upper dropdown list</li>";
+            IsValid = false;
+        }
+        var title = $.trim($("#Text_Title").val());
+        if (title == "") {
+            listOfError += "<li>Please Enter a title for the meter</li>";
+            IsValid = false;
+        }
+        var label = $.trim($("#Text_Label").val());
+        if (label == "") {
+            listOfError += "<li>Please Enter a label for the meter</li>";
+            IsValid = false;
+        }
+        var TypeOfChart = document.getElementById("SelectedMeter").value;
+        var MyType = Number(TypeOfChart);
+        var MyColumn = [];
+        var upper = [];
+
+        if (IsValid) {
+            if (Rtype == 3) {
+                $(".GridSelector option:selected").each(function () {
+                    MyColumn.push($(this).text().toString());
+                });
+                $.each(MyColumn, function (index, value) {
+                    var item = value.split(".");
+                    upper.push(item);
+                });
+            }
+            else {
+                MyColumn.push(document.getElementById("ColumnsSelected").value);
+                upper.push(MyColumn[0].split("."));
+            }
+
+            if ($('#Where').is(':checked'))
+            { var condition = document.getElementById("TextArea").value; }
+            else
+            { var condition = " "; }
+
+            var selected = $("input[type='radio'][name='Function']:checked").val();
+            if (selected == "Count")
+            { var SelectedFunction = "Count"; }
+            else if (selected == "Sum")
+            { var SelectedFunction = "Sum"; }
+            else if (selected == "Grid")
+            { var SelectedFunction = "Grid"; }
+            else { var SelectedFunction = " "; }
+            var myfunction = SelectedFunction;
+
+
+            $.ajax({
+                url: '@Url.Action("GetEntry", "Chart")',
+                type: "POST",
+                dataType: "json",
+                data: {
+                    __RequestVerificationToken: $('[name=__RequestVerificationToken]').val(),
+                    ArrayOfQuery: arrayofitems, AddCondition: condition, AggregationFunction: SelectedFunction,
+                    UpperDropDown: MyColumn, UpperTable: upper[0], RadioType: Rtype, MeterTitle: title, MeterLabel: label,
+                    MyChartType: TypeOfChart
+                },
+                success: function (result) {
+                    switch (Rtype) {
+                        case 1:
+                            GetMeters()
+
+                            listOfError += "<li>Your Input Entries Saved Successfully ! </li>";
+                            MyNotification(true, listOfError);
+                            break;
+                        case 2:
+                            switch (MyType) {
+                                case 1:
+                                    listOfError += "<li>Your Input Entries Saved Successfully ! </li>";
+                                    MyNotification(true, listOfError);
+                                    GetAllCharts()
+                                    break;
+                                case 2:
+                                    //code here
+                                    break;
+                                case 3:
+                                    //code here
+                                    break;
+                                case 4:
+                                    //code here
+                                    break;
+                                case 5:
+                                    //code here
+                                    break;
+                            }
+
+                            break;
+                        case 3:
+                            listOfError += "<li>Your Input Entries Saved Successfully ! </li>";
+                            MyNotification(true, listOfError);
+                            GetAllGrids();
+                            break;
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    listOfError += "<li>There is an error , please try again</li>";
+                    MyNotification(false, listOfError);
+                }
+                ,
+            });
+        }
+        else {
+            MyNotification(false, listOfError);
+        }
+    }
+    function ClearTable() {
+        var originalState = $("#myRow").clone();
+        $("#myRow").replaceWith(originalState);
+        $("#ColumnsSelected").empty();
+        $("#GridColumnsSelected").empty();
+        $("#dropcolumnname_1").empty()
+        //  countAdd = 1;
+        $('input[name="Function"]').attr('checked', false);
+        // $("#CountFunction").attr('checked') == 'checked';
+        for (i = 2 ; i <= countAdd ; i++) {
+            var entry = document.getElementById("rowId_" + i);
+            $(entry).remove();
+        }
+        $('#Where').prop('checked', false);
+        //var InputCondition = document.getElementById("TextArea");
+        // $(InputCondition).remove();
+        $("#Text_Title").val(' ');
+        $("#Text_Label").val(' ');
+        $("#TextArea").val(' ');
+        $("#TextArea").hide();
+    }
+    function MyNotification(NotifyPanel, Msg) {
+        if (NotifyPanel) {
+            $("#Message").attr('style', 'background-color:green');
+            document.getElementById("notify").innerHTML = Msg
+            $("#Message").fadeIn(3000);
+            setTimeout(function () {
+                $("#Message").hide();
+                $('#divselectCharts').modal('hide');
+            }, 5000);
+        }
+        else {
+            $("#Message").attr('style', 'background-color:red');
+            document.getElementById("notify").innerHTML = Msg
+            $("#Message").fadeIn(3000);
+            $("#SubmitButton").prop("disabled", false);
+            setTimeout(function () {
+                $("#Message").hide();
+                //  $('#divselectCharts').modal('hide');
+            }, 5000);
+        }
+    }
+    function DialogHidden() {
+        setInterval(function () {
+            $('#divselectCharts').modal('hide');
+        }, 4000);
+    }
+    function GetMeters() {
+        $("#DynamicMeters").html('')
+        $.ajax({
+            url: '@Url.Action("GetAllMeters", "Chart")',
+            type: "GET",
+            data: {
+                __RequestVerificationToken: $('[name=__RequestVerificationToken]').val()  //, arrayofresults: mytable
+            },
+            dataType: "json",
+            success: function (result) {
+                $.each(result, function (index, value) {
+                    var iDiv = document.createElement('div');
+                    iDiv.id = "g_" + value.id;
+                    iDiv.className = "col-lg-3 col-xs-6";
+                    document.getElementById("DynamicMeters").appendChild(iDiv);
+                    var g1 = new JustGage({
+                        id: "g_" + value.id,
+                        value: value.result,
+                        min: 0,
+                        max: 5000,
+                        title: value.MyTitle,
+                        label: value.MyLabel,
+                        gaugeWidthScale: 0.6,
+                        counter: true,
+                        titleFontColor: "Black",
+                        labelFontColor: "Black",
+                        //hideInnerShadow: true
+                    });
+                });
+
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                alert(xhr.status);
+                alert(thrownError);
+            }
+        });
+    }
+
+
+    function GetAllGrids() {
+        //$("#DynamicGridsPanel").html('')
+
+        $.ajax({
+            url: '@Url.Action("GetAllGrids", "Chart")',
+            type: "GET",
+            data: {
+                __RequestVerificationToken: $('[name=__RequestVerificationToken]').val()  //, arrayofresults: mytable
+            },
+            dataType: "json",
+            success: function (result) {
+                var GridModel = [];
+                $.each(result, function (index, value) {
+                    $.each(value.Model.split(','), function (index, value) {
+                    GridModel.push({ label: value, name: value })
+                });
+                
+                $("#jqGrid").jqGrid({
+        url: '@Url.Action("GridData", "Chart")',
+        mtype: "GET",
+        styleUI: 'Bootstrap',
+        data: value.result,
+        datatype: "jsonp",
+        colModel: GridModel,
+        viewrecords: true,
+        height: 250,
+        rowNum: 20,
+        pager: "#jqGridPager"
+    });
+                });
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                alert(xhr.status);
+                alert(thrownError);
+            }
+        });
+
+
+
+    }
+    function drawBarChart(canvas, data) {
+        for (var i = 0; i < data.length; i++) {
+            osConfig.data.labels[i] = data[i].Name;
+            osConfig.data.datasets[0].data[i] = data[i].Total;
+        }
+        // To set lower limit ofthe chart:
+        osConfig.data.datasets[0].data.push(0);
+        window.Static = new Chart(document.getElementById(canvas).getContext("2d"), osConfig);
+    }
+
+    function GetAllCharts() {
+        $("#DynamicCharts").html("");
+        $.ajax({
+            url: '@Url.Action("GetAllCharts", "Chart")',
+            type: "GET",
+            data: {
+                __RequestVerificationToken: $('[name=__RequestVerificationToken]').val()  //, arrayofresults: mytable
+            },
+            dataType: "json",
+            success: function (result) {
+                $.each(result, function (index, value) {
+                    osConfig = {
+                        type: 'bar',
+                        data: {
+                            labels: [],
+                            datasets:
+                                [
+                                    {
+                                        label: value.MyTitle,
+                                        fillColor: getRandomColor(),
+                                        strokeColor: getRandomColor(),
+                                        pointColor: getRandomColor(),
+                                        pointStrokeColor: getRandomColor(),
+                                        pointHighlightFill: getRandomColor(),
+                                        pointHighlightStroke: getRandomColor(),
+                                        borderColor: getRandomColor(),
+                                        backgroundColor: getRandomColor(),
+                                        pointBorderColor: getRandomColor(),
+                                        pointBackgroundColor: getRandomColor(),
+                                        pointBorderWidth: 1,
+                                        data: [],
+                                    },
+                                ],
+                        },
+                        options: {
+                            legend: {
+                                display: true
+                            },
+                            scales: {
+                                xAxes: [{
+                                    display: true,
+
+                                }],
+                                yAxes: [{
+                                    display: true,
+
+                                }]
+                            },
+                            showScale: true,
+                            scaleShowGridLines: false,
+                            scaleGridLineColor: getRandomColor(),
+                            scaleGridLineWidth: 1,
+                            scaleShowHorizontalLines: true,
+                            scaleShowVerticalLines: true,
+                            bezierCurve: true,
+                            pointDot: true,
+                            pointDotRadius: 4,
+                            pointDotStrokeWidth: 1,
+                            pointHitDetectionRadius: 20,
+                            datasetStroke: true,
+                            datasetFill: true,
+                            maintainAspectRatio: false,
+                            responsive: true
+                        }
+                    };
+                    $("#DynamicCharts").append("<div id='containerCharts_" + value.id + "' style='width: 100%;height: 410px'><canvas id='" + "Chart_" + value.id + "'></canvas></div>")
+                    drawBarChart("Chart_" + value.id, value.data);
+                });
+
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                alert(xhr.status);
+                alert(thrownError);
+            }
+        });
+
+    }
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+</script>

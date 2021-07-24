@@ -1,0 +1,8 @@
+﻿@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic);
+
+@font-face{
+    font-family: DroidArabicKufiRegular; 
+    src: url('../Content/fonts/DroidKufi.woff') format('woff'),
+         url('../Content/fonts/DroidKufi.eot') ,
+         url('../Content/fonts/DroidKufi.ttf') format('truetype');
+} 

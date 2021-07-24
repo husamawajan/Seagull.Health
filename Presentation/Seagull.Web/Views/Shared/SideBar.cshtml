@@ -1,0 +1,28 @@
+﻿<link href="@Url.Content("~/Themes/DefaultClean/Content/css/SideBar.css")" rel="stylesheet" />
+<html>
+<body>
+    <div class="area"></div><nav class="main-menu">
+        <ul>
+            @*<li>
+                    <a href="#">
+                        <i class="fa fa-home fa-2x"></i>
+                        <span class="nav-text">
+                            Dashboard
+                        </span>
+                    </a>
+
+                </li>*@
+            <li >
+                <a href="#">
+                    <i class="fa fa-pencil fa-2x"></i>
+                    <span class="nav-text">
+                        @Html.Action("LanguageSelector", "Common")
+                    </span>
+                </a>
+
+            </li>
+            @Html.Action("HeaderLinks", "Common")
+            
+    </nav>
+</body>
+</html>

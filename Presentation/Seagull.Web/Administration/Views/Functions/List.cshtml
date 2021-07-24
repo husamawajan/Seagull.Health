@@ -1,0 +1,18 @@
+@{
+    ViewBag.Title = T("Admin.Functionss").Text;
+    Html.SetActiveMenuItemSystemName("Functions");
+}
+<sg-page title="@T("Admin.Functions")">
+    <sg-table datasrc="Functions/ListFunctionss" create-action="@Url.Action("PrepareFunctions", "Functions")" token="@Html.RequestVerificationToken("FunctionsGrid")">
+        <sg-col name="Name" title="Name" type="text"></sg-col>
+        <sg-col title="Operation">
+            <span style="white-space: nowrap;">
+                <a class="btn btn-sm btn-warning" href="@Url.Action("PrepareFunctions", "Functions")/{{row.Id}}"><i class="fa fa-edit"></i></a>
+                <button class="btn btn-sm btn-danger" sg-confirm="vm.deleteRow(row)" modal-header="vm.delete_msg.header" modal-body="'Delete Row with id:'+row.Id"><i class="fa fa-trash"></i></button>
+            </span>
+        </sg-col>
+    </sg-table>
+</sg-page>
+
+
+	

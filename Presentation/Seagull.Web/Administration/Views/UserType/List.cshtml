@@ -1,0 +1,12 @@
+@{
+    ViewBag.Title = T("Admin.UserTypes").Text;
+    Html.SetActiveMenuItemSystemName("UserTypes");
+}
+<sg-page title="@T("Admin.UserTypes")">
+    <sg-table datasrc="UserType/ListUserTypes" create-action="@Url.Action("PrepareUserType", "UserType", new { seagull = UrlHelperExtensions.ActionEncodedCustom(new { id = 0 }) })" token="@Html.RequestVerificationToken("UserTypeGrid")">
+        <sg-col name="Type" title="@T("Admin.Seagull.UserTypes.Fields.Type")" type="text"></sg-col>
+    </sg-table>
+</sg-page>
+
+
+

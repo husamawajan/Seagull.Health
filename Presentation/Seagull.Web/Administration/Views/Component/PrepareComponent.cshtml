@@ -1,0 +1,12 @@
+﻿@model int
+@{
+    ViewBag.Title = T("Admin.Component").Text;
+    Html.SetActiveMenuItemSystemName("Component");
+}
+<sg-page title="@T("Admin.Component.AddNew")">
+    <form sg-form name="myform" data-ctrl="Component" data-id="@Model" token="@Html.RequestVerificationToken("Sector")">
+        <sg-form-toolbar></sg-form-toolbar>
+        <sg-input type="text" name="Name" label="Name" ng-model="model.Name" ng-required="true"></sg-input>
+    </form>
+</sg-page>
+
